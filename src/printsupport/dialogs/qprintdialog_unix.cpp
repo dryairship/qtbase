@@ -82,6 +82,10 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 #endif
 #endif
 
+#if QT_CONFIG(cpdb)
+#include <private/qcpdb_p.h>
+#endif
+
 /*
 
 Print dialog class declarations
@@ -1059,6 +1063,9 @@ void QPrintDialogPrivate::setTabs(const QList<QWidget*> &tabWidgets)
 QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
 {
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    initCPDB();
+#endif
     Q_D(QPrintDialog);
     d->init();
 }
@@ -1069,6 +1076,9 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
 QPrintDialog::QPrintDialog(QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    initCPDB();
+#endif
     Q_D(QPrintDialog);
     d->init();
 }
