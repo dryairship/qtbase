@@ -36,7 +36,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qplatformdefs.h"
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
@@ -80,6 +79,10 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 #if QT_CONFIG(cupsjobwidget)
 #include "qcupsjobwidget_p.h"
 #endif
+#endif
+
+#if QT_CONFIG(cpdb)
+#include <qcommonprintdialog.h>
 #endif
 
 /*
@@ -199,6 +202,7 @@ public:
     void _q_printerChanged(int index);
     void _q_btnPropertiesClicked();
     void _q_btnBrowseClicked();
+    void _q_printerListChanged();
 
     QUnixPrintWidget * const parent;
     QPrintPropertiesDialog *propertiesDialog;
@@ -228,6 +232,7 @@ public:
     ~QPrintDialogPrivate();
 
     void init();
+    void initCpd(QWidget* parent);
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
@@ -251,6 +256,7 @@ public:
     QDialogButtonBox *buttons;
     QPushButton *collapseButton;
     QPrinter::OutputFormat printerOutputFormat;
+    QCommonPrintDialog *qcpd;
 private:
     void setExplicitDuplexMode(QPrint::DuplexMode duplexMode);
     // duplex mode explicitly set by user, QPrint::DuplexAuto otherwise
@@ -617,6 +623,11 @@ QPrintDialogPrivate::QPrintDialogPrivate()
 
 QPrintDialogPrivate::~QPrintDialogPrivate()
 {
+}
+
+void QPrintDialogPrivate::initCpd(QWidget* parent)
+{
+    qcpd = new QCommonPrintDialog(parent);
 }
 
 void QPrintDialogPrivate::init()
@@ -1060,6 +1071,10 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
 {
     Q_D(QPrintDialog);
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    d->initCpd(parent);
+    return;
+#endif
     d->init();
 }
 
@@ -1070,6 +1085,10 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
     Q_D(QPrintDialog);
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    d->initCpd(parent);
+    return;
+#endif
     d->init();
 }
 
@@ -1081,6 +1100,11 @@ void QPrintDialog::setVisible(bool visible)
 {
     Q_D(QPrintDialog);
 
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    d->qcpd->setVisible(visible);
+    return;
+#endif
+
     if (visible)
         d->updateWidgets();
 
@@ -1089,11 +1113,21 @@ void QPrintDialog::setVisible(bool visible)
 
 int QPrintDialog::exec()
 {
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    Q_D(QPrintDialog);
+    return d->qcpd->exec();
+#else
     return QAbstractPrintDialog::exec();
+#endif
 }
 
 void QPrintDialog::accept()
 {
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    QDialog::accept();
+    return;
+#endif
+
     Q_D(QPrintDialog);
 #if QT_CONFIG(cups)
     if (d->options.pagesRadioButton->isChecked() && !isValidPagesString(d->options.pagesLineEdit->text())) {
@@ -1145,6 +1179,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     widget.setupUi(parent);
 
     int currentPrinterIndex = 0;
+
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
         const QStringList printers = ps->availablePrintDeviceIds();

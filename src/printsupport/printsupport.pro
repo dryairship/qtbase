@@ -7,6 +7,8 @@ QMAKE_DOCS = $$PWD/doc/qtprintsupport.qdocconf
 
 QMAKE_LIBS += $$QMAKE_LIBS_PRINTSUPPORT
 
+CONFIG += cpdb
+
 include(kernel/kernel.pri)
 include(widgets/widgets.pri)
 include(dialogs/dialogs.pri)

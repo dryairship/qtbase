@@ -31,6 +31,11 @@ qtConfig(printdialog) {
         dialogs/qprintpropertieswidget.ui
     }
 
+    unix:!darwin:qtConfig(cpdb) {
+        HEADERS += $$PWD/qcommonprintdialog.h
+        SOURCES += $$PWD/qcommonprintdialog.cpp
+    }
+
     SOURCES += \
         dialogs/qabstractprintdialog.cpp \
         dialogs/qpagesetupdialog.cpp

@@ -43,3 +43,10 @@ unix:!darwin:qtConfig(cups) {
         SOURCES += $$PWD/qcups.cpp
         HEADERS += $$PWD/qcups_p.h
 }
+
+unix:!darwin:qtConfig(cpdb){
+        CONFIG += link_pkgconfig
+        PKGCONFIG += gio-unix-2.0 glib-2.0 gobject-2.0 cpdb-libs-frontend
+        SOURCES += $$PWD/qcpdb.cpp
+        HEADERS += $$PWD/qcpdb_p.h
+}
