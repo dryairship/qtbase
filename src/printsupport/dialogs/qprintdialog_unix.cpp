@@ -1064,7 +1064,8 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
 {
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    initCPDB();
+    char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
+    CommonPrintDialogBackend cpdb = CommonPrintDialogBackend(id);
 #endif
     Q_D(QPrintDialog);
     d->init();
@@ -1077,7 +1078,8 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    initCPDB();
+    char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
+    CommonPrintDialogBackend cpdb = CommonPrintDialogBackend(id);
 #endif
     Q_D(QPrintDialog);
     d->init();

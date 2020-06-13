@@ -47,6 +47,6 @@ unix:!darwin:qtConfig(cups) {
 unix:!darwin:qtConfig(cpdb){
         CONFIG += link_pkgconfig
         PKGCONFIG += gio-unix-2.0 glib-2.0 gobject-2.0 cpdb-libs-frontend
-        SOURCES += $$PWD/qcpdb_fake.cpp
+        SOURCES += $$PWD/qcpdb.cpp
         HEADERS += $$PWD/qcpdb_p.h
 }

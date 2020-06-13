@@ -3,12 +3,38 @@
 
 #include <iostream>
 
+// Check if cpdb-libs is installed on the system
 #if __has_include(<cpdb-libs-frontend.h>)
   #define QCPDB_USING_CPDB 1
 #else
   #define QCPDB_USING_CPDB 0
 #endif
 
-void initCPDB();
+struct _FrontendObj;
+using FrontendObj = _FrontendObj;
 
-#endif
+struct _PrinterObj;
+using PrinterObj = _PrinterObj;
+
+class CpdbCallbackFunctions
+{
+public:
+    static int addPrinterCallback(PrinterObj *p);
+    static int removePrinterCallback(PrinterObj *p);
+};
+
+class CommonPrintDialogBackend
+{
+public:
+    CommonPrintDialogBackend(char* );
+    ~CommonPrintDialogBackend();
+
+private:
+    FrontendObj *frontendObj;
+    PrinterObj *printerObj;
+    char* id;
+
+    CommonPrintDialogBackend();
+};
+
+#endif // QCPDB_P_H
