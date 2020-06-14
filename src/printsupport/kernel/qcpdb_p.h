@@ -2,7 +2,6 @@
 #define QCPDB_P_H
 
 #include <iostream>
-#include <QList>
 
 // Check if cpdb-libs is installed on the system
 #if __has_include(<cpdb-libs-frontend.h>)
@@ -23,27 +22,28 @@ class CpdbPrinterListMaintainer
 {
 private:
     static CpdbPrinterListMaintainer *instance;
-    static CpdbPrinterList printerList;
     CpdbPrinterListMaintainer();
 
 public:
-    static CpdbPrinterListMaintainer *getInstance();
+    static CpdbPrinterList printerList;
     static int addPrinter(PrinterObj *p);
     static int removePrinter(PrinterObj *p);
+
+    static CpdbPrinterListMaintainer *getInstance();
 };
 
 class CommonPrintDialogBackend
 {
 public:
-    CommonPrintDialogBackend(char* );
+    CommonPrintDialogBackend();
+    CommonPrintDialogBackend(char*);
     ~CommonPrintDialogBackend();
+    QStringList getAvailablePrinters();
 
 private:
     FrontendObj *frontendObj;
     PrinterObj *printerObj;
     char* id;
-
-    CommonPrintDialogBackend();
 };
 
 #endif // QCPDB_P_H

@@ -85,7 +85,22 @@ CommonPrintDialogBackend::CommonPrintDialogBackend(char* id) : id {id}
     connect_to_dbus(frontendObj);
 }
 
+CommonPrintDialogBackend::CommonPrintDialogBackend()
+{
+}
+
 CommonPrintDialogBackend::~CommonPrintDialogBackend()
 {
     disconnect_from_dbus(frontendObj);
+}
+
+QStringList CommonPrintDialogBackend::getAvailablePrinters()
+{
+    QStringList printers;
+    for(auto it = CpdbPrinterListMaintainer::printerList.begin();
+        it != CpdbPrinterListMaintainer::printerList.end(); it++)
+    {
+        printers << QString::fromUtf8(it.value());
+    }
+    return printers;
 }

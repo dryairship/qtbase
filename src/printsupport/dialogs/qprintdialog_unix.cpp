@@ -36,7 +36,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include <iostream>
 #include "qplatformdefs.h"
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
@@ -84,6 +84,7 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 
 #if QT_CONFIG(cpdb)
 #include <private/qcpdb_p.h>
+static CommonPrintDialogBackend commonPrintDialogBackend;
 #endif
 
 /*
@@ -1065,7 +1066,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
 {
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    CommonPrintDialogBackend cpdb = CommonPrintDialogBackend(id);
+    commonPrintDialogBackend = CommonPrintDialogBackend(id);
 #endif
     Q_D(QPrintDialog);
     d->init();
@@ -1079,7 +1080,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
 {
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    CommonPrintDialogBackend cpdb = CommonPrintDialogBackend(id);
+    commonPrintDialogBackend = CommonPrintDialogBackend(id);
 #endif
     Q_D(QPrintDialog);
     d->init();
@@ -1157,6 +1158,14 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     widget.setupUi(parent);
 
     int currentPrinterIndex = 0;
+
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    const QStringList printers = commonPrintDialogBackend.getAvailablePrinters();
+    for(int i=0; i<printers.size(); i++) {
+        std::cout << "Adding printer to widget : " printers.at(i).toLocal8Bit().constData() << "\n";
+    }
+    widget.printers->addItems(printers);
+#else
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
         const QStringList printers = ps->availablePrintDeviceIds();
@@ -1170,6 +1179,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
         if (idx >= 0)
             currentPrinterIndex = idx;
     }
+#endif
     widget.properties->setEnabled(true);
 
 #if QT_CONFIG(filesystemmodel) && QT_CONFIG(completer)
