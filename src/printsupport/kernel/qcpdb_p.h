@@ -1,8 +1,6 @@
 #ifndef QCPDB_P_H
 #define QCPDB_P_H
 
-#include <iostream>
-
 // Check if cpdb-libs is installed on the system
 #if __has_include(<cpdb-libs-frontend.h>)
   #define QCPDB_USING_CPDB 1
@@ -18,18 +16,25 @@ using PrinterObj = _PrinterObj;
 
 typedef QMap<QPair<char*, char*>, char*> CpdbPrinterList;
 
-class CpdbPrinterListMaintainer
+class CpdbPrinterListMaintainer : public QObject
 {
+    Q_OBJECT
+
 private:
     static CpdbPrinterListMaintainer *instance;
     CpdbPrinterListMaintainer();
 
 public:
     static CpdbPrinterList printerList;
+
+    static CpdbPrinterListMaintainer *getInstance();
+
+public slots:
     static int addPrinter(PrinterObj *p);
     static int removePrinter(PrinterObj *p);
 
-    static CpdbPrinterListMaintainer *getInstance();
+signals:
+    void printerListChanged();
 };
 
 class CommonPrintDialogBackend

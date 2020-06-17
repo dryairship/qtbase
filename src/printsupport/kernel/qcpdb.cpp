@@ -36,22 +36,17 @@ CpdbPrinterListMaintainer* CpdbPrinterListMaintainer::getInstance()
 
 int CpdbPrinterListMaintainer::addPrinter(PrinterObj *p)
 {
-    std::cout << "Adding printer : ";
-    std::cout << p->name << ", ";
-    std::cout << p->id << ", ";
-    std::cout << p->backend_name << "\n";
+    qDebug("Adding printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
     printerList[qMakePair(p->backend_name, p->id)] = p->name;
+    emit (getInstance()->printerListChanged());
 
     return 0;
 }
 
 int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
 {
-    std::cout << "Removing printer : ";
-    std::cout << p->name << ", ";
-    std::cout << p->id << ", ";
-    std::cout << p->backend_name << "\n";
+    qDebug("Removing printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
     auto pair = qMakePair(p->backend_name, p->id);
     for (auto it = printerList.begin(); it != printerList.end(); it++) {
@@ -60,6 +55,7 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
             break;
         }
     }
+    emit (getInstance()->printerListChanged());
 
     return 0;
 }
