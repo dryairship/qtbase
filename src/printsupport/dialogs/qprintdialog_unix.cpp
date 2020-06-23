@@ -83,6 +83,7 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 
 #if QT_CONFIG(cpdb)
 #include <private/qcpdb_p.h>
+#include <qcommonprintdialog.h>
 static CommonPrintDialogBackend commonPrintDialogBackend;
 #endif
 
@@ -234,6 +235,7 @@ public:
     ~QPrintDialogPrivate();
 
     void init();
+    void initCpd(QWidget* parent);
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
@@ -257,6 +259,7 @@ public:
     QDialogButtonBox *buttons;
     QPushButton *collapseButton;
     QPrinter::OutputFormat printerOutputFormat;
+    QCommonPrintDialog *qcpd;
 private:
     void setExplicitDuplexMode(QPrint::DuplexMode duplexMode);
     // duplex mode explicitly set by user, QPrint::DuplexAuto otherwise
@@ -623,6 +626,11 @@ QPrintDialogPrivate::QPrintDialogPrivate()
 
 QPrintDialogPrivate::~QPrintDialogPrivate()
 {
+}
+
+void QPrintDialogPrivate::initCpd(QWidget* parent)
+{
+    qcpd = new QCommonPrintDialog(parent);
 }
 
 void QPrintDialogPrivate::init()
@@ -1065,11 +1073,13 @@ void QPrintDialogPrivate::setTabs(const QList<QWidget*> &tabWidgets)
 QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
 {
+    Q_D(QPrintDialog);
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
     commonPrintDialogBackend = CommonPrintDialogBackend(id);
+    d->initCpd(parent);
+    return;
 #endif
-    Q_D(QPrintDialog);
     d->init();
 }
 
@@ -1079,11 +1089,13 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
 QPrintDialog::QPrintDialog(QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
+    Q_D(QPrintDialog);
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
     commonPrintDialogBackend = CommonPrintDialogBackend(id);
+    d->initCpd(parent);
+    return;
 #endif
-    Q_D(QPrintDialog);
     d->init();
 }
 
@@ -1094,6 +1106,11 @@ QPrintDialog::~QPrintDialog()
 void QPrintDialog::setVisible(bool visible)
 {
     Q_D(QPrintDialog);
+
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    d->qcpd->setVisible(visible);
+    return;
+#endif
 
     if (visible)
         d->updateWidgets();

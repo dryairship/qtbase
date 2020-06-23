@@ -1,6 +1,13 @@
 #ifndef QCPDB_P_H
 #define QCPDB_P_H
 
+#include <QtGui/qevent.h>
+#include <QMap>
+#include <QObject>
+#include <QPair>
+#include <QStringList>
+
+
 // Check if cpdb-libs is installed on the system
 #if __has_include(<cpdb-libs-frontend.h>)
   #define QCPDB_USING_CPDB 1
@@ -29,11 +36,11 @@ public:
 
     static CpdbPrinterListMaintainer *getInstance();
 
-public slots:
+public Q_SLOTS:
     static int addPrinter(PrinterObj *p);
     static int removePrinter(PrinterObj *p);
 
-signals:
+Q_SIGNALS:
     void printerListChanged();
 };
 
