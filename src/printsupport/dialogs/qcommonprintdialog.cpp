@@ -1,26 +1,35 @@
 #include <QtWidgets/QtWidgets>
+#include <QUuid>
+#include <QStringList>
 
+#include <private/qcpdb_p.h>
 #include "qcommonprintdialog.h"
 
 QCommonPrintDialog::QCommonPrintDialog(QWidget *parent) :
     QDialog (parent)
 {
+    char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
+    backend = new CommonPrintDialogBackend(id);
+
     resize(360, 480);
-    mainLayout = new CommonPrintDialogMainLayout(parent);
+    mainLayout = new CommonPrintDialogMainLayout(backend, parent);
+    mainLayout->connectSignalsAndSlots();
     setLayout(mainLayout);
 }
 
 QCommonPrintDialog::~QCommonPrintDialog() {
 }
 
-CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(QWidget* parent)
+CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
+    CommonPrintDialogBackend *backend, QWidget* parent)
+    : backend(backend)
 {
     tabWidget = new QTabWidget;
 
-    generalTab = new CommonPrintDialogGeneralTab(parent);
-    pageSetupTab = new CommonPrintDialogPageSetupTab(parent);
-    optionsTab = new CommonPrintDialogOptionsTab(parent);
-    jobsTab = new CommonPrintDialogJobsTab(parent);
+    generalTab = new CommonPrintDialogGeneralTab(backend, parent);
+    pageSetupTab = new CommonPrintDialogPageSetupTab(backend, parent);
+    optionsTab = new CommonPrintDialogOptionsTab(backend, parent);
+    jobsTab = new CommonPrintDialogJobsTab(backend, parent);
 
     tabWidget->addTab(generalTab, tr("General"));
     tabWidget->addTab(pageSetupTab, tr("Page Setup"));
@@ -41,9 +50,17 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(QWidget* parent)
     addItem(controlsLayout);
 }
 
+void CommonPrintDialogMainLayout::connectSignalsAndSlots()
+{
+    QObject::connect(
+        CpdbPrinterListMaintainer::getInstance(), SIGNAL(printerListChanged()),
+        generalTab, SLOT(printerListChanged())
+    );
+}
 
-CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(QWidget *parent)
-    : QWidget(parent)
+CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
+    CommonPrintDialogBackend *backend, QWidget *parent)
+    : QWidget(parent), backend(backend)
 {
     destinationComboBox = new QComboBox;
     remotePrintersCheckBox = new QCheckBox;
@@ -70,7 +87,18 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(QWidget *parent)
     setLayout(layout);
 }
 
-CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(QWidget *parent)
+void CommonPrintDialogGeneralTab::printerListChanged()
+{
+    qDebug("qCPD: Updating Printers list");
+
+    const QStringList printers = backend->getAvailablePrinters();
+    destinationComboBox->clear();
+    destinationComboBox->addItems(printers);
+}
+
+CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
+    CommonPrintDialogBackend *backend, QWidget *parent)
+    : backend(backend)
 {
     bothSidesComboBox = new QComboBox;
     pagesPerSideComboBox = new QComboBox;
@@ -98,7 +126,9 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(QWidget *parent)
     (void)parent;
 }
 
-CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(QWidget *parent)
+CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
+    CommonPrintDialogBackend *backend, QWidget *parent)
+    : backend(backend)
 {
     marginTopValue = new QLineEdit;
     marginBottomValue = new QLineEdit;
@@ -128,7 +158,9 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(QWidget *parent)
     (void)parent;
 }
 
-CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(QWidget *parent)
+CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
+    CommonPrintDialogBackend *backend, QWidget *parent)
+    : backend(backend)
 {
     QWidget *jobsWidget = new QWidget;
     jobsLayout = new QGridLayout;

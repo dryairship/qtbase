@@ -3,6 +3,8 @@
 
 #include <QtWidgets/QtWidgets>
 
+#include <private/qcpdb_p.h>
+
 class CommonPrintDialogGeneralTab : public QWidget
 {
     Q_OBJECT
@@ -17,7 +19,12 @@ public:
     QComboBox *orientationComboBox;
     QComboBox *colorModeComboBox;
 
-    explicit CommonPrintDialogGeneralTab(QWidget *parent = nullptr);
+    CommonPrintDialogBackend *backend;
+
+    explicit CommonPrintDialogGeneralTab(CommonPrintDialogBackend *backend, QWidget *parent = nullptr);
+
+public Q_SLOTS:
+    void printerListChanged();
 };
 
 class CommonPrintDialogPageSetupTab : public QWidget
@@ -32,7 +39,9 @@ public:
     QComboBox *paperSourceComboBox;
     QComboBox *pageRangeComboBox;
 
-    explicit CommonPrintDialogPageSetupTab(QWidget *parent = nullptr);
+    CommonPrintDialogBackend *backend;
+
+    explicit CommonPrintDialogPageSetupTab(CommonPrintDialogBackend *backend, QWidget *parent = nullptr);
 };
 
 class CommonPrintDialogOptionsTab : public QWidget
@@ -51,7 +60,9 @@ public:
     QComboBox *ippAttributeFidelityComboBox;
     QFormLayout *layout;
 
-    explicit CommonPrintDialogOptionsTab(QWidget *parent = nullptr);
+    CommonPrintDialogBackend *backend;
+
+    explicit CommonPrintDialogOptionsTab(CommonPrintDialogBackend *backend, QWidget *parent = nullptr);
 };
 
 class CommonPrintDialogJobsTab : public QWidget
@@ -68,7 +79,9 @@ public:
     QGridLayout *jobsLayout;
     QScrollArea *scrollArea;
 
-    explicit CommonPrintDialogJobsTab(QWidget *parent = nullptr);
+    CommonPrintDialogBackend *backend;
+
+    explicit CommonPrintDialogJobsTab(CommonPrintDialogBackend *backend, QWidget *parent = nullptr);
 };
 
 class CommonPrintDialogMainLayout : public QHBoxLayout
@@ -84,8 +97,11 @@ public:
     CommonPrintDialogPageSetupTab *pageSetupTab;
     CommonPrintDialogOptionsTab *optionsTab;
     CommonPrintDialogJobsTab *jobsTab;
+
+    CommonPrintDialogBackend *backend;
     
-    explicit CommonPrintDialogMainLayout(QWidget* parent = nullptr);
+    explicit CommonPrintDialogMainLayout(CommonPrintDialogBackend *backend, QWidget* parent = nullptr);
+    void connectSignalsAndSlots();
 };
 
 class QCommonPrintDialog : public QDialog
@@ -93,6 +109,7 @@ class QCommonPrintDialog : public QDialog
     Q_OBJECT
 private:
     CommonPrintDialogMainLayout *mainLayout;
+    CommonPrintDialogBackend *backend;
 
 public:
     explicit QCommonPrintDialog(QWidget *parent = nullptr);
