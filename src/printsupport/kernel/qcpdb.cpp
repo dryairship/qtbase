@@ -60,6 +60,52 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
     return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    CpdbUtils
+
+    A class that contains some commonly used functions.
+
+*/
+
+
+QStringList CpdbUtils::convertOptionToQStringList(Option* option)
+{
+    QStringList qsl;
+    for(int i = 0; i < option->num_supported; i++)
+        qsl.append(QString::fromUtf8(option->supported_values[i]));
+    return qsl;
+}
+
+QMap<QString, QStringList> CpdbUtils::convertOptionsToQMap(Options* options)
+{
+    QMap<QString, QStringList> qmap;
+
+    GHashTableIter it;
+    g_hash_table_iter_init(&it, options->table);
+    gpointer _key, _value;
+
+    while (g_hash_table_iter_next(&it, &_key, &_value)) {
+        QString key = QString::fromUtf8(static_cast<char *>(_key));
+        QStringList value = CpdbUtils::convertOptionToQStringList(static_cast<Option *>(_value));
+        qmap[key] = value;
+    }
+    return qmap;
+}
+
+QString CpdbUtils::convertPWGToReadablePaperSize(QString paperSize)
+{
+    return QString::fromUtf8(pwg_to_readable(paperSize.toLocal8Bit().constData()));
+}
+
+QString CpdbUtils::convertReadablePaperSizeToPWG(QString paperSize)
+{
+    return QString::fromUtf8(readable_to_pwg(paperSize.toLocal8Bit().constData()));
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,4 +145,9 @@ QStringList CommonPrintDialogBackend::getAvailablePrinters()
         printers << QString::fromUtf8(it.value());
     }
     return printers;
+}
+
+QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(char* printerName, char* backendName) {
+    PrinterObj* p = find_PrinterObj(frontendObj, printerName, backendName);
+    return CpdbUtils::convertOptionsToQMap(get_all_options(p));
 }

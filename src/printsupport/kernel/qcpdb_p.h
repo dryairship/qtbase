@@ -21,6 +21,12 @@ using FrontendObj = _FrontendObj;
 struct _PrinterObj;
 using PrinterObj = _PrinterObj;
 
+struct _Option;
+using Option = _Option;
+
+class _Options;
+using Options = _Options;
+
 typedef QMap<QPair<char*, char*>, char*> CpdbPrinterList;
 
 class CpdbPrinterListMaintainer : public QObject
@@ -44,13 +50,22 @@ Q_SIGNALS:
     void printerListChanged();
 };
 
+class CpdbUtils {
+public:
+    static QStringList convertOptionToQStringList(Option* option);
+    static QMap<QString, QStringList> convertOptionsToQMap(Options* options);
+    static QString convertPWGToReadablePaperSize(QString paperSize);
+    static QString convertReadablePaperSizeToPWG(QString paperSize);
+};
+
 class CommonPrintDialogBackend
 {
 public:
     CommonPrintDialogBackend();
-    CommonPrintDialogBackend(char*);
+    CommonPrintDialogBackend(char* id);
     ~CommonPrintDialogBackend();
     QStringList getAvailablePrinters();
+    QMap<QString, QStringList> getOptionsForPrinter(char* printerName, char* backendName);
 
 private:
     FrontendObj *frontendObj;
