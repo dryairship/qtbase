@@ -25,6 +25,7 @@ public:
 
 public Q_SLOTS:
     void printerListChanged();
+    void newPrinterSelected(int selectedIndex);
 };
 
 class CommonPrintDialogPageSetupTab : public QWidget

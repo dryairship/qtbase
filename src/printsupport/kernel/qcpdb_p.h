@@ -27,7 +27,7 @@ using Option = _Option;
 class _Options;
 using Options = _Options;
 
-typedef QMap<QPair<char*, char*>, char*> CpdbPrinterList;
+typedef QMap<QString, QPair<QString, QString>> CpdbPrinterList;
 
 class CpdbPrinterListMaintainer : public QObject
 {
@@ -65,7 +65,7 @@ public:
     CommonPrintDialogBackend(char* id);
     ~CommonPrintDialogBackend();
     QStringList getAvailablePrinters();
-    QMap<QString, QStringList> getOptionsForPrinter(char* printerName, char* backendName);
+    QMap<QString, QStringList> getOptionsForPrinter(QString printerName, QString backendName);
 
 private:
     FrontendObj *frontendObj;

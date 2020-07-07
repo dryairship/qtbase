@@ -56,6 +56,11 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         CpdbPrinterListMaintainer::getInstance(), SIGNAL(printerListChanged()),
         generalTab, SLOT(printerListChanged())
     );
+
+    QObject::connect(
+        generalTab->destinationComboBox, SIGNAL(currentIndexChanged(int)),
+        generalTab, SLOT(newPrinterSelected(int))
+    );
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
@@ -94,6 +99,20 @@ void CommonPrintDialogGeneralTab::printerListChanged()
     const QStringList printers = backend->getAvailablePrinters();
     destinationComboBox->clear();
     destinationComboBox->addItems(printers);
+}
+
+void CommonPrintDialogGeneralTab::newPrinterSelected(int i)
+{
+    QString selectedPrinterName = destinationComboBox->currentText();
+    if(!CpdbPrinterListMaintainer::printerList.contains(selectedPrinterName))
+        return;
+
+    QPair<QString, QString> selectedPrinter = CpdbPrinterListMaintainer::printerList[selectedPrinterName];
+    qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
+    QMap<QString, QStringList> options = backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
+    for (auto it = options.begin(); it != options.end(); it++) {
+        qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(", ").toLocal8Bit().data());
+    }
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(

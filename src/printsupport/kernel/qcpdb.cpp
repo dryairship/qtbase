@@ -1,4 +1,5 @@
 #include "qcpdb_p.h"
+#include <QtCore/qdebug.h>
 
 // To prevent compilation errors from glib-2.0/gio/gio.h
 #undef signals
@@ -38,7 +39,8 @@ int CpdbPrinterListMaintainer::addPrinter(PrinterObj *p)
 {
     qDebug("Adding printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
-    printerList[qMakePair(p->backend_name, p->id)] = p->name;
+    printerList[QString::fromUtf8(p->name)] = 
+        qMakePair(QString::fromUtf8(p->id), QString::fromUtf8(p->backend_name));
     emit (getInstance()->printerListChanged());
 
     return 0;
@@ -48,9 +50,9 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
 {
     qDebug("Removing printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
-    auto pair = qMakePair(p->backend_name, p->id);
+    QString key = QString::fromUtf8(p->name);
     for (auto it = printerList.begin(); it != printerList.end(); it++) {
-        if(it.key() == pair) {
+        if(it.key() == key) {
             printerList.erase(it);
             break;
         }
@@ -142,12 +144,13 @@ QStringList CommonPrintDialogBackend::getAvailablePrinters()
     for(auto it = CpdbPrinterListMaintainer::printerList.begin();
         it != CpdbPrinterListMaintainer::printerList.end(); it++)
     {
-        printers << QString::fromUtf8(it.value());
+        printers << it.key();
     }
     return printers;
 }
 
-QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(char* printerName, char* backendName) {
-    PrinterObj* p = find_PrinterObj(frontendObj, printerName, backendName);
+QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(QString printerId, QString backend) {
+    qDebug("printerId: %s, backend: %s", printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
+    PrinterObj* p = find_PrinterObj(frontendObj, printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
     return CpdbUtils::convertOptionsToQMap(get_all_options(p));
 }
