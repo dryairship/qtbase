@@ -82,9 +82,7 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 #endif
 
 #if QT_CONFIG(cpdb)
-#include <private/qcpdb_p.h>
 #include <qcommonprintdialog.h>
-static CommonPrintDialogBackend commonPrintDialogBackend;
 #endif
 
 /*
@@ -188,7 +186,6 @@ private:
     Q_PRIVATE_SLOT(d, void _q_printerChanged(int))
     Q_PRIVATE_SLOT(d, void _q_btnBrowseClicked())
     Q_PRIVATE_SLOT(d, void _q_btnPropertiesClicked())
-    Q_PRIVATE_SLOT(d, void _q_printerListChanged())
 };
 
 class QUnixPrintWidgetPrivate
@@ -1075,8 +1072,6 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
 {
     Q_D(QPrintDialog);
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    commonPrintDialogBackend = CommonPrintDialogBackend(id);
     d->initCpd(parent);
     return;
 #endif
@@ -1091,8 +1086,6 @@ QPrintDialog::QPrintDialog(QWidget *parent)
 {
     Q_D(QPrintDialog);
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    commonPrintDialogBackend = CommonPrintDialogBackend(id);
     d->initCpd(parent);
     return;
 #endif
@@ -1177,10 +1170,6 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 
     int currentPrinterIndex = 0;
 
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    const QStringList printers = commonPrintDialogBackend.getAvailablePrinters();
-    widget.printers->addItems(printers);
-#else
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
         const QStringList printers = ps->availablePrintDeviceIds();
@@ -1194,7 +1183,6 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
         if (idx >= 0)
             currentPrinterIndex = idx;
     }
-#endif
     widget.properties->setEnabled(true);
 
 #if QT_CONFIG(filesystemmodel) && QT_CONFIG(completer)
@@ -1208,10 +1196,6 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
                      parent, SLOT(_q_printerChanged(int)));
     QObject::connect(widget.fileBrowser, SIGNAL(clicked()), parent, SLOT(_q_btnBrowseClicked()));
     QObject::connect(widget.properties, SIGNAL(clicked()), parent, SLOT(_q_btnPropertiesClicked()));
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    QObject::connect(CpdbPrinterListMaintainer::getInstance(), SIGNAL(printerListChanged()),
-                    parent, SLOT(_q_printerListChanged()));
-#endif
 
     // disable features that QPrinter does not yet support.
     widget.preview->setVisible(false);
@@ -1251,17 +1235,6 @@ void QUnixPrintWidgetPrivate::updateWidget()
 
 QUnixPrintWidgetPrivate::~QUnixPrintWidgetPrivate()
 {
-}
-
-void QUnixPrintWidgetPrivate::_q_printerListChanged()
-{
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    const QStringList printers = commonPrintDialogBackend.getAvailablePrinters();
-    // Q_ASSERT On line 1269 fails without setting this false
-    filePrintersAdded = false;
-    widget.printers->clear();
-    widget.printers->addItems(printers);
-#endif
 }
 
 void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
