@@ -1,3 +1,4 @@
+#include <memory>
 #include <QtWidgets/QtWidgets>
 #include <QUuid>
 #include <QStringList>
@@ -5,11 +6,13 @@
 #include <private/qcpdb_p.h>
 #include "qcommonprintdialog.h"
 
+using namespace std;
+
 QCommonPrintDialog::QCommonPrintDialog(QWidget *parent) :
     QDialog (parent)
 {
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    backend = new CommonPrintDialogBackend(id);
+    backend = make_shared<CommonPrintDialogBackend>(id);
 
     resize(360, 480);
     mainLayout = new CommonPrintDialogMainLayout(backend, parent);
@@ -21,7 +24,7 @@ QCommonPrintDialog::~QCommonPrintDialog() {
 }
 
 CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
-    CommonPrintDialogBackend *backend, QWidget* parent)
+    shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
     : backend(backend)
 {
     tabWidget = new QTabWidget;
@@ -64,7 +67,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
-    CommonPrintDialogBackend *backend, QWidget *parent)
+    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : QWidget(parent), backend(backend)
 {
     destinationComboBox = new QComboBox;
@@ -136,7 +139,7 @@ void CommonPrintDialogGeneralTab::populateComboBox(QComboBox *comboBox, QStringL
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
-    CommonPrintDialogBackend *backend, QWidget *parent)
+    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : backend(backend)
 {
     bothSidesComboBox = new QComboBox;
@@ -166,7 +169,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 }
 
 CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
-    CommonPrintDialogBackend *backend, QWidget *parent)
+    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : backend(backend)
 {
     marginTopValue = new QLineEdit;
@@ -198,7 +201,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
 }
 
 CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
-    CommonPrintDialogBackend *backend, QWidget *parent)
+    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : backend(backend)
 {
     QWidget *jobsWidget = new QWidget;
