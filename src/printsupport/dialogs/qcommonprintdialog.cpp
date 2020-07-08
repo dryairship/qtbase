@@ -89,6 +89,8 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     layout->addRow(new QLabel(tr("Orientation")), orientationComboBox);
     layout->addRow(new QLabel(tr("Color Mode")), colorModeComboBox);
 
+    copiesSpinBox->setValue(1);
+
     setLayout(layout);
 }
 
@@ -114,6 +116,8 @@ void CommonPrintDialogGeneralTab::newPrinterSelected(int i)
         qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(", ").toLocal8Bit().data());
     }
     populatePaperSizeComboBox(options[QString::fromUtf8("media")]);
+    populateComboBox(orientationComboBox, options[QString::fromUtf8("orientation-requested")]);
+    populateComboBox(colorModeComboBox, options[QString::fromUtf8("print-color-mode")]);
 }
 
 void CommonPrintDialogGeneralTab::populatePaperSizeComboBox(QStringList sizes) {
@@ -121,6 +125,14 @@ void CommonPrintDialogGeneralTab::populatePaperSizeComboBox(QStringList sizes) {
     for(auto pwgSize : sizes){
         paperComboBox->addItem(CpdbUtils::convertPWGToReadablePaperSize(pwgSize));
     }
+    paperComboBox->setEnabled(paperComboBox->count() != 0);
+}
+
+void CommonPrintDialogGeneralTab::populateComboBox(QComboBox *comboBox, QStringList values)
+{
+    comboBox->clear();
+    comboBox->addItems(values);
+    comboBox->setEnabled(comboBox->count() != 0);
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
