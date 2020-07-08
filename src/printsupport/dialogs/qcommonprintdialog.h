@@ -22,6 +22,7 @@ public:
     CommonPrintDialogBackend *backend;
 
     explicit CommonPrintDialogGeneralTab(CommonPrintDialogBackend *backend, QWidget *parent = nullptr);
+    void populatePaperSizeComboBox(QStringList sizes);
 
 public Q_SLOTS:
     void printerListChanged();

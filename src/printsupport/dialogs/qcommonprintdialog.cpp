@@ -113,6 +113,14 @@ void CommonPrintDialogGeneralTab::newPrinterSelected(int i)
     for (auto it = options.begin(); it != options.end(); it++) {
         qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(", ").toLocal8Bit().data());
     }
+    populatePaperSizeComboBox(options[QString::fromUtf8("media")]);
+}
+
+void CommonPrintDialogGeneralTab::populatePaperSizeComboBox(QStringList sizes) {
+    paperComboBox->clear();
+    for(auto pwgSize : sizes){
+        paperComboBox->addItem(CpdbUtils::convertPWGToReadablePaperSize(pwgSize));
+    }
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(

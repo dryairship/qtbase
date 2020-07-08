@@ -71,8 +71,12 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
 QStringList CpdbUtils::convertOptionToQStringList(Option* option)
 {
     QStringList qsl;
-    for(int i = 0; i < option->num_supported; i++)
-        qsl.append(QString::fromUtf8(option->supported_values[i]));
+    for(int i = 0; i < option->num_supported; i++) {
+        if(strcmp(option->supported_values[i], option->default_value) != 0)
+            qsl.append(QString::fromUtf8(option->supported_values[i]));
+    }
+    if(strcmp(option->default_value, "") != 0)
+        qsl.prepend(QString::fromUtf8(option->default_value));
     return qsl;
 }
 
