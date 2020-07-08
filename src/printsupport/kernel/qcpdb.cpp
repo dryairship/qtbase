@@ -50,13 +50,7 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
 {
     qDebug("Removing printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
-    QString key = QString::fromUtf8(p->name);
-    for (auto it = printerList.begin(); it != printerList.end(); it++) {
-        if(it.key() == key) {
-            printerList.erase(it);
-            break;
-        }
-    }
+    printerList.remove(QString::fromUtf8(p->name));
     emit (getInstance()->printerListChanged());
 
     return 0;
@@ -141,11 +135,8 @@ CommonPrintDialogBackend::~CommonPrintDialogBackend()
 QStringList CommonPrintDialogBackend::getAvailablePrinters()
 {
     QStringList printers;
-    for(auto it = CpdbPrinterListMaintainer::printerList.begin();
-        it != CpdbPrinterListMaintainer::printerList.end(); it++)
-    {
-        printers << it.key();
-    }
+    for(auto it : CpdbPrinterListMaintainer::printerList)
+        printers << it.first;
     return printers;
 }
 
