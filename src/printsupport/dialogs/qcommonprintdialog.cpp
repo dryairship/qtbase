@@ -12,12 +12,12 @@ QCommonPrintDialog::QCommonPrintDialog(QWidget *parent) :
     QDialog (parent)
 {
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    backend = make_shared<CommonPrintDialogBackend>(id);
+    m_backend = make_shared<CommonPrintDialogBackend>(id);
 
     resize(360, 480);
-    mainLayout = new CommonPrintDialogMainLayout(backend, parent);
-    mainLayout->connectSignalsAndSlots();
-    setLayout(mainLayout);
+    m_mainLayout = new CommonPrintDialogMainLayout(m_backend, parent);
+    m_mainLayout->connectSignalsAndSlots();
+    setLayout(m_mainLayout);
 }
 
 QCommonPrintDialog::~QCommonPrintDialog() {
