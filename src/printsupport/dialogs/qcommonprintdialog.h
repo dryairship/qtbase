@@ -82,6 +82,19 @@ public:
     explicit CommonPrintDialogJobsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
 };
 
+class CommonPrintDialogExtraOptionsTab : public QWidget
+{
+    Q_OBJECT
+
+public:
+    QFormLayout *layout;
+
+    std::shared_ptr<CommonPrintDialogBackend> backend;
+
+    explicit CommonPrintDialogExtraOptionsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
+    QComboBox *addNewComboBox(QString name);
+};
+
 class CommonPrintDialogMainLayout : public QHBoxLayout
 {
     Q_OBJECT
@@ -95,6 +108,7 @@ public:
     CommonPrintDialogPageSetupTab *pageSetupTab;
     CommonPrintDialogOptionsTab *optionsTab;
     CommonPrintDialogJobsTab *jobsTab;
+    CommonPrintDialogExtraOptionsTab *extraOptionsTab;
 
     std::shared_ptr<CommonPrintDialogBackend> backend;
     

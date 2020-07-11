@@ -14,7 +14,7 @@ QCommonPrintDialog::QCommonPrintDialog(QWidget *parent) :
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
     m_backend = make_shared<CommonPrintDialogBackend>(id);
 
-    resize(360, 480);
+    resize(500, 480);
     m_mainLayout = new CommonPrintDialogMainLayout(m_backend, parent);
     m_mainLayout->connectSignalsAndSlots();
     setLayout(m_mainLayout);
@@ -33,11 +33,13 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     pageSetupTab = new CommonPrintDialogPageSetupTab(backend, parent);
     optionsTab = new CommonPrintDialogOptionsTab(backend, parent);
     jobsTab = new CommonPrintDialogJobsTab(backend, parent);
+    extraOptionsTab = new CommonPrintDialogExtraOptionsTab(backend, parent);
 
     tabWidget->addTab(generalTab, tr("General"));
     tabWidget->addTab(pageSetupTab, tr("Page Setup"));
     tabWidget->addTab(optionsTab, tr("Options"));
     tabWidget->addTab(jobsTab, tr("Jobs"));
+    tabWidget->addTab(extraOptionsTab, tr("Extra Options"));
 
     printButton = new QPushButton(tr("Print"));
     printButton->setDefault(true);
@@ -104,6 +106,11 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     populateComboBox(jobsTab->jobNameComboBox, options[QString::fromUtf8("job-name")]);
     populateComboBox(jobsTab->jobPriorityComboBox, options[QString::fromUtf8("job-priority")]);
     populateComboBox(jobsTab->jobSheetsComboBox, options[QString::fromUtf8("job-sheets")]);
+
+    for (auto it = options.begin(); it != options.end(); it++) {
+        QComboBox *newComboBox = extraOptionsTab->addNewComboBox(it.key());
+        populateComboBox(newComboBox, it.value());
+    }
 }
 
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)
@@ -243,4 +250,22 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     setLayout(layout);
 
     (void)parent;
+}
+
+CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
+    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
+    : backend(backend)
+{
+    layout = new QFormLayout;
+    setLayout(layout);
+
+    (void)parent;
+}
+
+QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
+{
+    QComboBox *comboBox = new QComboBox;
+    comboBox->setProperty("name", name);
+    layout->addRow(new QLabel(name), comboBox);
+    return comboBox;
 }
