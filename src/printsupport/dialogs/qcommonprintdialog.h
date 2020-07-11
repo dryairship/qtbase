@@ -23,12 +23,6 @@ public:
     std::shared_ptr<CommonPrintDialogBackend> backend;
 
     explicit CommonPrintDialogGeneralTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
-    void populatePaperSizeComboBox(QStringList sizes);
-    void populateComboBox(QComboBox *comboBox, QStringList sizes);
-
-public Q_SLOTS:
-    void printerListChanged();
-    void newPrinterSelected(int selectedIndex);
 };
 
 class CommonPrintDialogPageSetupTab : public QWidget
@@ -106,6 +100,11 @@ public:
     
     explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
     void connectSignalsAndSlots();
+    void populateComboBox(QComboBox *comboBox, QStringList sizes);
+
+public Q_SLOTS:
+    void printerListChanged();
+    void newPrinterSelected(int selectedIndex);
 };
 
 class QCommonPrintDialog : public QDialog

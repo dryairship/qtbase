@@ -101,6 +101,14 @@ QString CpdbUtils::convertPWGToReadablePaperSize(QString paperSize)
     return QString::fromUtf8(pwg_to_readable(paperSize.toLocal8Bit().constData()));
 }
 
+QStringList CpdbUtils::convertPaperSizesToReadable(QStringList paperSizes)
+{
+    QStringList readableList;
+    for(QString paperSize : paperSizes)
+        readableList << convertPWGToReadablePaperSize(paperSize);
+    return readableList;
+}
+
 QString CpdbUtils::convertReadablePaperSizeToPWG(QString paperSize)
 {
     return QString::fromUtf8(readable_to_pwg(paperSize.toLocal8Bit().constData()));

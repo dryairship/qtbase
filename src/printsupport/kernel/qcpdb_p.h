@@ -56,6 +56,7 @@ public:
     static QMap<QString, QStringList> convertOptionsToQMap(Options* options);
     static QString convertPWGToReadablePaperSize(QString paperSize);
     static QString convertReadablePaperSizeToPWG(QString paperSize);
+    static QStringList convertPaperSizesToReadable(QStringList paperSizes);
 };
 
 class CommonPrintDialogBackend

@@ -57,13 +57,60 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
 {
     QObject::connect(
         CpdbPrinterListMaintainer::getInstance(), SIGNAL(printerListChanged()),
-        generalTab, SLOT(printerListChanged())
+        this, SLOT(printerListChanged())
     );
 
     QObject::connect(
         generalTab->destinationComboBox, SIGNAL(currentIndexChanged(int)),
-        generalTab, SLOT(newPrinterSelected(int))
+        this, SLOT(newPrinterSelected(int))
     );
+}
+
+void CommonPrintDialogMainLayout::printerListChanged()
+{
+    qDebug("qCPD: Updating Printers list");
+
+    const QStringList printers = backend->getAvailablePrinters();
+    generalTab->destinationComboBox->clear();
+    generalTab->destinationComboBox->addItems(printers);
+}
+
+void CommonPrintDialogMainLayout::newPrinterSelected(int i)
+{
+    QString selectedPrinterName = generalTab->destinationComboBox->currentText();
+    if(!CpdbPrinterListMaintainer::printerList.contains(selectedPrinterName))
+        return;
+
+    QPair<QString, QString> selectedPrinter = CpdbPrinterListMaintainer::printerList[selectedPrinterName];
+    qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
+    QMap<QString, QStringList> options = backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
+    for (auto it = options.begin(); it != options.end(); it++) {
+        qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(", ").toLocal8Bit().data());
+    }
+
+    populateComboBox(generalTab->paperComboBox, CpdbUtils::convertPaperSizesToReadable(options[QString::fromUtf8("media")]));
+    populateComboBox(generalTab->orientationComboBox, options[QString::fromUtf8("orientation-requested")]);
+    populateComboBox(generalTab->colorModeComboBox, options[QString::fromUtf8("print-color-mode")]);
+
+    populateComboBox(pageSetupTab->bothSidesComboBox, options[QString::fromUtf8("sides")]);
+    populateComboBox(pageSetupTab->pagesPerSideComboBox, options[QString::fromUtf8("number-up")]);
+
+    populateComboBox(optionsTab->resolutionComboBox, options[QString::fromUtf8("printer-resolution")]);
+    populateComboBox(optionsTab->qualityComboBox, options[QString::fromUtf8("print-quality")]);
+    populateComboBox(optionsTab->outputBinComboBox, options[QString::fromUtf8("output-bin")]);
+    populateComboBox(optionsTab->finishingsComboBox, options[QString::fromUtf8("finishings")]);
+
+    populateComboBox(jobsTab->startJobComboBox, options[QString::fromUtf8("job-hold-until")]);
+    populateComboBox(jobsTab->jobNameComboBox, options[QString::fromUtf8("job-name")]);
+    populateComboBox(jobsTab->jobPriorityComboBox, options[QString::fromUtf8("job-priority")]);
+    populateComboBox(jobsTab->jobSheetsComboBox, options[QString::fromUtf8("job-sheets")]);
+}
+
+void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)
+{
+    comboBox->clear();
+    comboBox->addItems(values);
+    comboBox->setEnabled(comboBox->count() != 0);
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
@@ -95,47 +142,6 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     copiesSpinBox->setValue(1);
 
     setLayout(layout);
-}
-
-void CommonPrintDialogGeneralTab::printerListChanged()
-{
-    qDebug("qCPD: Updating Printers list");
-
-    const QStringList printers = backend->getAvailablePrinters();
-    destinationComboBox->clear();
-    destinationComboBox->addItems(printers);
-}
-
-void CommonPrintDialogGeneralTab::newPrinterSelected(int i)
-{
-    QString selectedPrinterName = destinationComboBox->currentText();
-    if(!CpdbPrinterListMaintainer::printerList.contains(selectedPrinterName))
-        return;
-
-    QPair<QString, QString> selectedPrinter = CpdbPrinterListMaintainer::printerList[selectedPrinterName];
-    qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
-    QMap<QString, QStringList> options = backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
-    for (auto it = options.begin(); it != options.end(); it++) {
-        qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(", ").toLocal8Bit().data());
-    }
-    populatePaperSizeComboBox(options[QString::fromUtf8("media")]);
-    populateComboBox(orientationComboBox, options[QString::fromUtf8("orientation-requested")]);
-    populateComboBox(colorModeComboBox, options[QString::fromUtf8("print-color-mode")]);
-}
-
-void CommonPrintDialogGeneralTab::populatePaperSizeComboBox(QStringList sizes) {
-    paperComboBox->clear();
-    for(auto pwgSize : sizes){
-        paperComboBox->addItem(CpdbUtils::convertPWGToReadablePaperSize(pwgSize));
-    }
-    paperComboBox->setEnabled(paperComboBox->count() != 0);
-}
-
-void CommonPrintDialogGeneralTab::populateComboBox(QComboBox *comboBox, QStringList values)
-{
-    comboBox->clear();
-    comboBox->addItems(values);
-    comboBox->setEnabled(comboBox->count() != 0);
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
