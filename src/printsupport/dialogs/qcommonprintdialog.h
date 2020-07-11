@@ -93,6 +93,7 @@ public:
 
     explicit CommonPrintDialogExtraOptionsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
     QComboBox *addNewComboBox(QString name);
+    void deleteAllComboBoxes();
 };
 
 class CommonPrintDialogMainLayout : public QHBoxLayout

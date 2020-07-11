@@ -87,27 +87,46 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
     QMap<QString, QStringList> options = backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
     for (auto it = options.begin(); it != options.end(); it++) {
-        qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(", ").toLocal8Bit().data());
+        qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(tr(", ")).toLocal8Bit().data());
     }
 
-    populateComboBox(generalTab->paperComboBox, CpdbUtils::convertPaperSizesToReadable(options[QString::fromUtf8("media")]));
-    populateComboBox(generalTab->orientationComboBox, options[QString::fromUtf8("orientation-requested")]);
-    populateComboBox(generalTab->colorModeComboBox, options[QString::fromUtf8("print-color-mode")]);
+    QSet<QString> usedKeys;
+    usedKeys.insert(tr("copies"));
 
-    populateComboBox(pageSetupTab->bothSidesComboBox, options[QString::fromUtf8("sides")]);
-    populateComboBox(pageSetupTab->pagesPerSideComboBox, options[QString::fromUtf8("number-up")]);
+    populateComboBox(generalTab->paperComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
+    usedKeys.insert(tr("media"));
+    populateComboBox(generalTab->orientationComboBox, options[tr("orientation-requested")]);
+    usedKeys.insert(tr("orientation-requested"));
+    populateComboBox(generalTab->colorModeComboBox, options[tr("print-color-mode")]);
+    usedKeys.insert(tr("print-color-mode"));
 
-    populateComboBox(optionsTab->resolutionComboBox, options[QString::fromUtf8("printer-resolution")]);
-    populateComboBox(optionsTab->qualityComboBox, options[QString::fromUtf8("print-quality")]);
-    populateComboBox(optionsTab->outputBinComboBox, options[QString::fromUtf8("output-bin")]);
-    populateComboBox(optionsTab->finishingsComboBox, options[QString::fromUtf8("finishings")]);
+    populateComboBox(pageSetupTab->bothSidesComboBox, options[tr("sides")]);
+    usedKeys.insert(tr("sides"));
+    populateComboBox(pageSetupTab->pagesPerSideComboBox, options[tr("number-up")]);
+    usedKeys.insert(tr("number-up"));
 
-    populateComboBox(jobsTab->startJobComboBox, options[QString::fromUtf8("job-hold-until")]);
-    populateComboBox(jobsTab->jobNameComboBox, options[QString::fromUtf8("job-name")]);
-    populateComboBox(jobsTab->jobPriorityComboBox, options[QString::fromUtf8("job-priority")]);
-    populateComboBox(jobsTab->jobSheetsComboBox, options[QString::fromUtf8("job-sheets")]);
+    populateComboBox(optionsTab->resolutionComboBox, options[tr("printer-resolution")]);
+    usedKeys.insert(tr("printer-resolution"));
+    populateComboBox(optionsTab->qualityComboBox, options[tr("print-quality")]);
+    usedKeys.insert(tr("print-quality"));
+    populateComboBox(optionsTab->outputBinComboBox, options[tr("output-bin")]);
+    usedKeys.insert(tr("output-bin"));
+    populateComboBox(optionsTab->finishingsComboBox, options[tr("finishings")]);
+    usedKeys.insert(tr("finishings"));
 
+    populateComboBox(jobsTab->startJobComboBox, options[tr("job-hold-until")]);
+    usedKeys.insert(tr("job-hold-until"));
+    populateComboBox(jobsTab->jobNameComboBox, options[tr("job-name")]);
+    usedKeys.insert(tr("job-name"));
+    populateComboBox(jobsTab->jobPriorityComboBox, options[tr("job-priority")]);
+    usedKeys.insert(tr("job-priority"));
+    populateComboBox(jobsTab->jobSheetsComboBox, options[tr("job-sheets")]);
+    usedKeys.insert(tr("job-sheets"));
+
+    extraOptionsTab->deleteAllComboBoxes();
     for (auto it = options.begin(); it != options.end(); it++) {
+        if(usedKeys.contains(it.key()))
+            continue;
         QComboBox *newComboBox = extraOptionsTab->addNewComboBox(it.key());
         populateComboBox(newComboBox, it.value());
     }
@@ -268,4 +287,11 @@ QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
     comboBox->setProperty("name", name);
     layout->addRow(new QLabel(name), comboBox);
     return comboBox;
+}
+
+void CommonPrintDialogExtraOptionsTab::deleteAllComboBoxes()
+{
+    int rowCount = layout->rowCount();
+    for(int i=rowCount-1; i>=0; i--)
+        layout->removeRow(i);
 }
