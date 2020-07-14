@@ -16,7 +16,6 @@ QCommonPrintDialog::QCommonPrintDialog(QWidget *parent) :
 
     resize(500, 480);
     m_mainLayout = new CommonPrintDialogMainLayout(m_backend, parent);
-    m_mainLayout->connectSignalsAndSlots();
     setLayout(m_mainLayout);
 }
 
@@ -25,34 +24,36 @@ QCommonPrintDialog::~QCommonPrintDialog() {
 
 CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
-    : backend(backend)
+    : m_backend(backend)
 {
-    tabWidget = new QTabWidget;
+    m_tabWidget = new QTabWidget;
 
-    generalTab = new CommonPrintDialogGeneralTab(backend, parent);
-    pageSetupTab = new CommonPrintDialogPageSetupTab(backend, parent);
-    optionsTab = new CommonPrintDialogOptionsTab(backend, parent);
-    jobsTab = new CommonPrintDialogJobsTab(backend, parent);
-    extraOptionsTab = new CommonPrintDialogExtraOptionsTab(backend, parent);
+    m_generalTab = new CommonPrintDialogGeneralTab(backend, parent);
+    m_pageSetupTab = new CommonPrintDialogPageSetupTab(backend, parent);
+    m_optionsTab = new CommonPrintDialogOptionsTab(backend, parent);
+    m_jobsTab = new CommonPrintDialogJobsTab(backend, parent);
+    m_extraOptionsTab = new CommonPrintDialogExtraOptionsTab(backend, parent);
 
-    tabWidget->addTab(generalTab, tr("General"));
-    tabWidget->addTab(pageSetupTab, tr("Page Setup"));
-    tabWidget->addTab(optionsTab, tr("Options"));
-    tabWidget->addTab(jobsTab, tr("Jobs"));
-    tabWidget->addTab(extraOptionsTab, tr("Extra Options"));
+    m_tabWidget->addTab(m_generalTab, tr("General"));
+    m_tabWidget->addTab(m_pageSetupTab, tr("Page Setup"));
+    m_tabWidget->addTab(m_optionsTab, tr("Options"));
+    m_tabWidget->addTab(m_jobsTab, tr("Jobs"));
+    m_tabWidget->addTab(m_extraOptionsTab, tr("Extra Options"));
 
-    printButton = new QPushButton(tr("Print"));
-    printButton->setDefault(true);
-    cancelButton = new QPushButton(tr("Cancel"));
+    m_printButton = new QPushButton(tr("Print"));
+    m_printButton->setDefault(true);
+    m_cancelButton = new QPushButton(tr("Cancel"));
     QHBoxLayout *buttonLayout = new QHBoxLayout;
-    buttonLayout->addWidget(printButton);
-    buttonLayout->addWidget(cancelButton);
+    buttonLayout->addWidget(m_printButton);
+    buttonLayout->addWidget(m_cancelButton);
 
     QVBoxLayout *controlsLayout = new QVBoxLayout;
-    controlsLayout->addWidget(tabWidget);
+    controlsLayout->addWidget(m_tabWidget);
     controlsLayout->addItem(buttonLayout);
 
     addItem(controlsLayout);
+
+    connectSignalsAndSlots();
 }
 
 void CommonPrintDialogMainLayout::connectSignalsAndSlots()
@@ -63,7 +64,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
-        generalTab->destinationComboBox, SIGNAL(currentIndexChanged(int)),
+        m_generalTab->m_destinationComboBox, SIGNAL(currentIndexChanged(int)),
         this, SLOT(newPrinterSelected(int))
     );
 }
@@ -72,20 +73,20 @@ void CommonPrintDialogMainLayout::printerListChanged()
 {
     qDebug("qCPD: Updating Printers list");
 
-    const QStringList printers = backend->getAvailablePrinters();
-    generalTab->destinationComboBox->clear();
-    generalTab->destinationComboBox->addItems(printers);
+    const QStringList printers = m_backend->getAvailablePrinters();
+    m_generalTab->m_destinationComboBox->clear();
+    m_generalTab->m_destinationComboBox->addItems(printers);
 }
 
 void CommonPrintDialogMainLayout::newPrinterSelected(int i)
 {
-    QString selectedPrinterName = generalTab->destinationComboBox->currentText();
+    QString selectedPrinterName = m_generalTab->m_destinationComboBox->currentText();
     if(!CpdbPrinterListMaintainer::printerList.contains(selectedPrinterName))
         return;
 
     QPair<QString, QString> selectedPrinter = CpdbPrinterListMaintainer::printerList[selectedPrinterName];
     qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
-    QMap<QString, QStringList> options = backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
+    QMap<QString, QStringList> options = m_backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
     for (auto it = options.begin(); it != options.end(); it++) {
         qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(tr(", ")).toLocal8Bit().data());
     }
@@ -93,41 +94,41 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     QSet<QString> usedKeys;
     usedKeys.insert(tr("copies"));
 
-    populateComboBox(generalTab->paperComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
+    populateComboBox(m_generalTab->m_paperComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
     usedKeys.insert(tr("media"));
-    populateComboBox(generalTab->orientationComboBox, options[tr("orientation-requested")]);
+    populateComboBox(m_generalTab->m_orientationComboBox, options[tr("orientation-requested")]);
     usedKeys.insert(tr("orientation-requested"));
-    populateComboBox(generalTab->colorModeComboBox, options[tr("print-color-mode")]);
+    populateComboBox(m_generalTab->m_colorModeComboBox, options[tr("print-color-mode")]);
     usedKeys.insert(tr("print-color-mode"));
 
-    populateComboBox(pageSetupTab->bothSidesComboBox, options[tr("sides")]);
+    populateComboBox(m_pageSetupTab->m_bothSidesComboBox, options[tr("sides")]);
     usedKeys.insert(tr("sides"));
-    populateComboBox(pageSetupTab->pagesPerSideComboBox, options[tr("number-up")]);
+    populateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options[tr("number-up")]);
     usedKeys.insert(tr("number-up"));
 
-    populateComboBox(optionsTab->resolutionComboBox, options[tr("printer-resolution")]);
+    populateComboBox(m_optionsTab->m_resolutionComboBox, options[tr("printer-resolution")]);
     usedKeys.insert(tr("printer-resolution"));
-    populateComboBox(optionsTab->qualityComboBox, options[tr("print-quality")]);
+    populateComboBox(m_optionsTab->m_qualityComboBox, options[tr("print-quality")]);
     usedKeys.insert(tr("print-quality"));
-    populateComboBox(optionsTab->outputBinComboBox, options[tr("output-bin")]);
+    populateComboBox(m_optionsTab->m_outputBinComboBox, options[tr("output-bin")]);
     usedKeys.insert(tr("output-bin"));
-    populateComboBox(optionsTab->finishingsComboBox, options[tr("finishings")]);
+    populateComboBox(m_optionsTab->m_finishingComboBox, options[tr("finishings")]);
     usedKeys.insert(tr("finishings"));
 
-    populateComboBox(jobsTab->startJobComboBox, options[tr("job-hold-until")]);
+    populateComboBox(m_jobsTab->m_startJobComboBox, options[tr("job-hold-until")]);
     usedKeys.insert(tr("job-hold-until"));
-    populateComboBox(jobsTab->jobNameComboBox, options[tr("job-name")]);
+    populateComboBox(m_jobsTab->m_jobNameComboBox, options[tr("job-name")]);
     usedKeys.insert(tr("job-name"));
-    populateComboBox(jobsTab->jobPriorityComboBox, options[tr("job-priority")]);
+    populateComboBox(m_jobsTab->m_jobPriorityComboBox, options[tr("job-priority")]);
     usedKeys.insert(tr("job-priority"));
-    populateComboBox(jobsTab->jobSheetsComboBox, options[tr("job-sheets")]);
+    populateComboBox(m_jobsTab->m_jobSheetsComboBox, options[tr("job-sheets")]);
     usedKeys.insert(tr("job-sheets"));
 
-    extraOptionsTab->deleteAllComboBoxes();
+    m_extraOptionsTab->deleteAllComboBoxes();
     for (auto it = options.begin(); it != options.end(); it++) {
         if(usedKeys.contains(it.key()))
             continue;
-        QComboBox *newComboBox = extraOptionsTab->addNewComboBox(it.key());
+        QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(it.key());
         populateComboBox(newComboBox, it.value());
     }
 }
@@ -141,59 +142,57 @@ void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringL
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : QWidget(parent), backend(backend)
+    : QWidget(parent), m_backend(backend)
 {
-    destinationComboBox = new QComboBox;
-    remotePrintersCheckBox = new QCheckBox;
-    paperComboBox = new QComboBox;
-    pagesComboBox = new QComboBox;
-    copiesSpinBox = new QSpinBox;
-    collateCheckBox = new QCheckBox;
-    orientationComboBox = new QComboBox;
-    colorModeComboBox = new QComboBox;
+    m_destinationComboBox = new QComboBox;
+    m_remotePrintersCheckBox = new QCheckBox;
+    m_paperComboBox = new QComboBox;
+    m_pagesComboBox = new QComboBox;
+    m_copiesSpinBox = new QSpinBox;
+    m_collateCheckBox = new QCheckBox;
+    m_orientationComboBox = new QComboBox;
+    m_colorModeComboBox = new QComboBox;
 
-    pagesComboBox->addItem(tr("All"));
+    m_pagesComboBox->addItem(tr("All"));
 
     QFormLayout *layout = new QFormLayout;
 
-    layout->addRow(new QLabel(tr("Destination")), destinationComboBox);
-    layout->addRow(new QLabel(tr("Remote Printers")), remotePrintersCheckBox);
-    layout->addRow(new QLabel(tr("Paper")), paperComboBox);
-    layout->addRow(new QLabel(tr("Pages")), pagesComboBox);
-    layout->addRow(new QLabel(tr("Copies")), copiesSpinBox);
-    layout->addRow(new QLabel(tr("Collate Pages")), collateCheckBox);
-    layout->addRow(new QLabel(tr("Orientation")), orientationComboBox);
-    layout->addRow(new QLabel(tr("Color Mode")), colorModeComboBox);
+    layout->addRow(new QLabel(tr("Destination")), m_destinationComboBox);
+    layout->addRow(new QLabel(tr("Remote Printers")), m_remotePrintersCheckBox);
+    layout->addRow(new QLabel(tr("Paper")), m_paperComboBox);
+    layout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
+    layout->addRow(new QLabel(tr("Copies")), m_copiesSpinBox);
+    layout->addRow(new QLabel(tr("Collate Pages")), m_collateCheckBox);
+    layout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
+    layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
 
-    copiesSpinBox->setValue(1);
+    m_copiesSpinBox->setValue(1);
 
     setLayout(layout);
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : backend(backend)
+    : m_backend(backend)
 {
-    bothSidesComboBox = new QComboBox;
-    pagesPerSideComboBox = new QComboBox;
-    onlyPrintComboBox = new QComboBox;
-    scaleSpinBox = new QSpinBox;
-    scaleSpinBox->setRange(0, 200);
-    scaleSpinBox->setValue(100);
-    scaleSpinBox->setSuffix(tr("%"));
-    paperSourceComboBox = new QComboBox;
-    pageRangeComboBox = new QComboBox;
+    m_bothSidesComboBox = new QComboBox;
+    m_pagesPerSideComboBox = new QComboBox;
+    m_scaleSpinBox = new QSpinBox;
+    m_scaleSpinBox->setRange(0, 200);
+    m_scaleSpinBox->setValue(100);
+    m_scaleSpinBox->setSuffix(tr("%"));
+    m_paperSourceComboBox = new QComboBox;
+    m_pageRangeComboBox = new QComboBox;
 
     QFormLayout *layout = new QFormLayout;
 
     layout->addRow(new QLabel(tr("Layout")));
-    layout->addRow(new QLabel(tr("Print Both Sides")), bothSidesComboBox);
-    layout->addRow(new QLabel(tr("Pages Per Side")), pagesPerSideComboBox);
-    layout->addRow(new QLabel(tr("Only Print")), onlyPrintComboBox);
-    layout->addRow(new QLabel(tr("Scale")), scaleSpinBox);
+    layout->addRow(new QLabel(tr("Print Both Sides")), m_bothSidesComboBox);
+    layout->addRow(new QLabel(tr("Pages Per Side")), m_pagesPerSideComboBox);
+    layout->addRow(new QLabel(tr("Scale")), m_scaleSpinBox);
     layout->addRow(new QLabel(tr("")));
     layout->addRow(new QLabel(tr("Paper")));
-    layout->addRow(new QLabel(tr("Paper Source")), paperSourceComboBox);
+    layout->addRow(new QLabel(tr("Paper Source")), m_paperSourceComboBox);
 
     setLayout(layout);
 
@@ -202,69 +201,69 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 
 CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : backend(backend)
+    : m_backend(backend)
 {
-    marginTopValue = new QLineEdit;
-    marginBottomValue = new QLineEdit;
-    marginLeftValue = new QLineEdit;
-    marginRightValue = new QLineEdit;
-    resolutionComboBox = new QComboBox;
-    qualityComboBox = new QComboBox;
-    outputBinComboBox = new QComboBox;
-    finishingsComboBox = new QComboBox;
-    ippAttributeFidelityComboBox = new QComboBox;
+    m_marginTopValue = new QLineEdit;
+    m_marginBottomValue = new QLineEdit;
+    m_marginLeftValue = new QLineEdit;
+    m_marginRightValue = new QLineEdit;
+    m_resolutionComboBox = new QComboBox;
+    m_qualityComboBox = new QComboBox;
+    m_outputBinComboBox = new QComboBox;
+    m_finishingComboBox = new QComboBox;
+    m_ippAttributeFidelityComboBox = new QComboBox;
 
-    layout = new QFormLayout;
+    m_layout = new QFormLayout;
 
-    layout->addRow((new QLabel(tr("Margin"))));
-    layout->addRow(new QLabel(tr("Top")), marginTopValue);
-    layout->addRow(new QLabel(tr("Bottom")), marginBottomValue);
-    layout->addRow(new QLabel(tr("Left")), marginLeftValue);
-    layout->addRow(new QLabel(tr("Right")), marginRightValue);
-    layout->addRow(new QLabel(tr("")));
-    layout->addRow(new QLabel(tr("Resolution")), resolutionComboBox);
-    layout->addRow(new QLabel(tr("Quality")), qualityComboBox);
-    layout->addRow(new QLabel(tr("Output Bin")), outputBinComboBox);
-    layout->addRow(new QLabel(tr("Finishings")), finishingsComboBox);
+    m_layout->addRow((new QLabel(tr("Margin"))));
+    m_layout->addRow(new QLabel(tr("Top")), m_marginTopValue);
+    m_layout->addRow(new QLabel(tr("Bottom")), m_marginBottomValue);
+    m_layout->addRow(new QLabel(tr("Left")), m_marginLeftValue);
+    m_layout->addRow(new QLabel(tr("Right")), m_marginRightValue);
+    m_layout->addRow(new QLabel(tr("")));
+    m_layout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
+    m_layout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
+    m_layout->addRow(new QLabel(tr("Output Bin")), m_outputBinComboBox);
+    m_layout->addRow(new QLabel(tr("Finishings")), m_finishingComboBox);
 
-    setLayout(layout);
+    setLayout(m_layout);
 
     (void)parent;
 }
 
 CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : backend(backend)
+    : m_backend(backend)
 {
     QWidget *jobsWidget = new QWidget;
-    jobsLayout = new QGridLayout;
+    m_jobsLayout = new QGridLayout;
 
-    jobsLayout->addWidget(new QLabel(tr("Printer")), 0, 0);
-    jobsLayout->addWidget(new QLabel(tr("Location")), 0, 1);
-    jobsLayout->addWidget(new QLabel(tr("Status")), 0, 2);
+    m_jobsLayout->addWidget(new QLabel(tr("Printer")), 0, 0);
+    m_jobsLayout->addWidget(new QLabel(tr("Location")), 0, 1);
+    m_jobsLayout->addWidget(new QLabel(tr("Status")), 0, 2);
 
-    jobsWidget->setLayout(jobsLayout);
+    jobsWidget->setLayout(m_jobsLayout);
 
-    scrollArea = new QScrollArea;
-    scrollArea->setMinimumHeight(240);
-    scrollArea->setWidget(jobsWidget);
-    scrollArea->setWidgetResizable(true);
+    m_scrollArea = new QScrollArea;
+    m_scrollArea->setMinimumHeight(240);
+    m_scrollArea->setWidget(jobsWidget);
+    m_scrollArea->setWidgetResizable(true);
 
-    refreshButton = new QPushButton(tr("Refresh"));
-    startJobComboBox = new QComboBox;
-    saveJobButton = new QPushButton(tr("Save"));
-    jobNameComboBox = new QComboBox;
-    jobPriorityComboBox = new QComboBox;
-    jobSheetsComboBox = new QComboBox;
+    m_refreshButton = new QPushButton(tr("Refresh"));
+    m_startJobComboBox = new QComboBox;
+    m_saveJobButton = new QPushButton(tr("Save"));
+    m_jobNameComboBox = new QComboBox;
+    m_jobPriorityComboBox = new QComboBox;
+    m_jobSheetsComboBox = new QComboBox;
 
     QFormLayout *layout = new QFormLayout;
-    layout->addRow(scrollArea);
-    layout->addRow(new QLabel(tr("Refresh")), refreshButton);
-    layout->addRow(new QLabel(tr("Start Job")), startJobComboBox);
-    layout->addRow(new QLabel(tr("Save Job")), saveJobButton);
-    layout->addRow(new QLabel(tr("Job Name")), jobNameComboBox);
-    layout->addRow(new QLabel(tr("Job Priority")), jobPriorityComboBox);
-    layout->addRow(new QLabel(tr("Job Sheets")), jobSheetsComboBox);
+    layout->addRow(m_scrollArea);
+    layout->addRow(new QLabel(tr("Refresh")), m_refreshButton);
+    layout->addRow(new QLabel(tr("Start Job")), m_startJobComboBox);
+    layout->addRow(new QLabel(tr("Save Job")), m_saveJobButton);
+    layout->addRow(new QLabel(tr("Job Name")), m_jobNameComboBox);
+    layout->addRow(new QLabel(tr("Job Priority")), m_jobPriorityComboBox);
+    layout->addRow(new QLabel(tr("Job Sheets")), m_jobSheetsComboBox);
 
     setLayout(layout);
 
@@ -273,10 +272,10 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
 
 CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : backend(backend)
+    : m_backend(backend)
 {
-    layout = new QFormLayout;
-    setLayout(layout);
+    m_layout = new QFormLayout;
+    setLayout(m_layout);
 
     (void)parent;
 }
@@ -285,13 +284,13 @@ QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
 {
     QComboBox *comboBox = new QComboBox;
     comboBox->setProperty("name", name);
-    layout->addRow(new QLabel(name), comboBox);
+    m_layout->addRow(new QLabel(name), comboBox);
     return comboBox;
 }
 
 void CommonPrintDialogExtraOptionsTab::deleteAllComboBoxes()
 {
-    int rowCount = layout->rowCount();
+    int rowCount = m_layout->rowCount();
     for(int i=rowCount-1; i>=0; i--)
-        layout->removeRow(i);
+        m_layout->removeRow(i);
 }

@@ -34,7 +34,7 @@ class CpdbPrinterListMaintainer : public QObject
     Q_OBJECT
 
 private:
-    static CpdbPrinterListMaintainer *instance;
+    static CpdbPrinterListMaintainer *m_instance;
     CpdbPrinterListMaintainer();
 
 public:
@@ -69,9 +69,9 @@ public:
     QMap<QString, QStringList> getOptionsForPrinter(QString printerName, QString backendName);
 
 private:
-    FrontendObj *frontendObj;
-    PrinterObj *printerObj;
-    char* id;
+    FrontendObj *m_frontendObj;
+    PrinterObj *m_printerObj;
+    char* m_id;
 };
 
 #endif // QCPDB_P_H

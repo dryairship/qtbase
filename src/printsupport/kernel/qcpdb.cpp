@@ -20,19 +20,19 @@ extern "C" {
 */
 
 // Define the static instances
-CpdbPrinterListMaintainer* CpdbPrinterListMaintainer::instance = nullptr;
+CpdbPrinterListMaintainer* CpdbPrinterListMaintainer::m_instance = nullptr;
 CpdbPrinterList CpdbPrinterListMaintainer::printerList = *(new CpdbPrinterList);
 
 CpdbPrinterListMaintainer::CpdbPrinterListMaintainer()
 {
-    instance = nullptr;
+    m_instance = nullptr;
     printerList = *(new CpdbPrinterList);
 }
 
 CpdbPrinterListMaintainer* CpdbPrinterListMaintainer::getInstance()
 {
-    if (!instance) instance = new CpdbPrinterListMaintainer;
-    return instance;
+    if (!m_instance) m_instance = new CpdbPrinterListMaintainer;
+    return m_instance;
 }
 
 int CpdbPrinterListMaintainer::addPrinter(PrinterObj *p)
@@ -126,13 +126,13 @@ QString CpdbUtils::convertReadablePaperSizeToPWG(QString paperSize)
 
 */
 
-CommonPrintDialogBackend::CommonPrintDialogBackend(char* id) : id {id}
+CommonPrintDialogBackend::CommonPrintDialogBackend(char* id) : m_id {id}
 {
     event_callback addCallbackFn = reinterpret_cast<event_callback>(CpdbPrinterListMaintainer::addPrinter);
     event_callback removeCallbackFn = reinterpret_cast<event_callback>(CpdbPrinterListMaintainer::removePrinter);
 
-    frontendObj = get_new_FrontendObj(id, addCallbackFn, removeCallbackFn);
-    connect_to_dbus(frontendObj);
+    m_frontendObj = get_new_FrontendObj(m_id, addCallbackFn, removeCallbackFn);
+    connect_to_dbus(m_frontendObj);
 }
 
 CommonPrintDialogBackend::CommonPrintDialogBackend()
@@ -141,7 +141,7 @@ CommonPrintDialogBackend::CommonPrintDialogBackend()
 
 CommonPrintDialogBackend::~CommonPrintDialogBackend()
 {
-    disconnect_from_dbus(frontendObj);
+    disconnect_from_dbus(m_frontendObj);
 }
 
 QStringList CommonPrintDialogBackend::getAvailablePrinters()
@@ -152,8 +152,9 @@ QStringList CommonPrintDialogBackend::getAvailablePrinters()
     return printers;
 }
 
-QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(QString printerId, QString backend) {
+QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(QString printerId, QString backend)
+{
     qDebug("printerId: %s, backend: %s", printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
-    PrinterObj* p = find_PrinterObj(frontendObj, printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
+    PrinterObj* p = find_PrinterObj(m_frontendObj, printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
     return CpdbUtils::convertOptionsToQMap(get_all_options(p));
 }
