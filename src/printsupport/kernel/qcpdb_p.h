@@ -75,6 +75,10 @@ public:
     void setColorMode(QString colorMode);
     void setPrintBothSidesOption(QString colorMode);
     void setPagesPerSide(QString pagesPerSide);
+    void setResolution(QString resolution);
+    void setQuality(QString quality);
+    void setOutputBin(QString outputBin);
+    void setFinishings(QString finishings);
 
 private:
     FrontendObj *m_frontendObj;

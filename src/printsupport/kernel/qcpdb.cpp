@@ -225,3 +225,38 @@ void CommonPrintDialogBackend::setPagesPerSide(QString pagesPerSide)
         pagesPerSide.toLatin1().data()
     );
 }
+void CommonPrintDialogBackend::setResolution(QString resolution)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("printer-resolutions"),
+        resolution.toLatin1().data()
+    );
+}
+
+void CommonPrintDialogBackend::setQuality(QString quality)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("print-quality"),
+        quality.toLatin1().data()
+    );
+}
+
+void CommonPrintDialogBackend::setOutputBin(QString outputBin)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("output-bin"),
+        outputBin.toLatin1().data()
+    );
+}
+
+void CommonPrintDialogBackend::setFinishings(QString finishings)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("finishings"),
+        finishings.toLatin1().data()
+    );
+}

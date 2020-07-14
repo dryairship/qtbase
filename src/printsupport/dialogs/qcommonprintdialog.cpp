@@ -107,6 +107,26 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         m_pageSetupTab->m_pagesPerSideComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(pagesPerSideComboBoxValueChanged(QString))
     );
+
+    QObject::connect(
+        m_optionsTab->m_resolutionComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(resolutionComboBoxValueChanged(QString))
+    );
+
+    QObject::connect(
+        m_optionsTab->m_qualityComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(qualityComboBoxValueChanged(QString))
+    );
+
+    QObject::connect(
+        m_optionsTab->m_outputBinComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(outputBinComboBoxValueChanged(QString))
+    );
+
+    QObject::connect(
+        m_optionsTab->m_finishingsComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(finishingsComboBoxValueChanged(QString))
+    );
 }
 
 void CommonPrintDialogMainLayout::printerListChanged()
@@ -153,7 +173,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     usedKeys.insert(tr("print-quality"));
     populateComboBox(m_optionsTab->m_outputBinComboBox, options[tr("output-bin")]);
     usedKeys.insert(tr("output-bin"));
-    populateComboBox(m_optionsTab->m_finishingComboBox, options[tr("finishings")]);
+    populateComboBox(m_optionsTab->m_finishingsComboBox, options[tr("finishings")]);
     usedKeys.insert(tr("finishings"));
 
     populateComboBox(m_jobsTab->m_startJobComboBox, options[tr("job-hold-until")]);
@@ -220,6 +240,30 @@ void CommonPrintDialogMainLayout::pagesPerSideComboBoxValueChanged(QString curre
 {
     qDebug("qCPD: pagesPerSideChanged: %s", currentText.toLatin1().data());
     m_backend->setPagesPerSide(currentText);
+}
+
+void CommonPrintDialogMainLayout::resolutionComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: resolutionChanged: %s", currentText.toLatin1().data());
+    m_backend->setResolution(currentText);
+}
+
+void CommonPrintDialogMainLayout::qualityComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: qualityChanged: %s", currentText.toLatin1().data());
+    m_backend->setQuality(currentText);
+}
+
+void CommonPrintDialogMainLayout::outputBinComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: outputBinChanged: %s", currentText.toLatin1().data());
+    m_backend->setOutputBin(currentText);
+}
+
+void CommonPrintDialogMainLayout::finishingsComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: finishingsChanged: %s", currentText.toLatin1().data());
+    m_backend->setFinishings(currentText);
 }
 
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)
@@ -301,7 +345,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_resolutionComboBox = new QComboBox;
     m_qualityComboBox = new QComboBox;
     m_outputBinComboBox = new QComboBox;
-    m_finishingComboBox = new QComboBox;
+    m_finishingsComboBox = new QComboBox;
     m_ippAttributeFidelityComboBox = new QComboBox;
 
     m_layout = new QFormLayout;
@@ -315,7 +359,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_layout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
     m_layout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
     m_layout->addRow(new QLabel(tr("Output Bin")), m_outputBinComboBox);
-    m_layout->addRow(new QLabel(tr("Finishings")), m_finishingComboBox);
+    m_layout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
 
     setLayout(m_layout);
 

@@ -57,7 +57,7 @@ private:
     QComboBox *m_resolutionComboBox;
     QComboBox *m_qualityComboBox;
     QComboBox *m_outputBinComboBox;
-    QComboBox *m_finishingComboBox;
+    QComboBox *m_finishingsComboBox;
     QComboBox *m_ippAttributeFidelityComboBox;
     QFormLayout *m_layout;
 
@@ -136,6 +136,10 @@ private Q_SLOTS:
     void colorModeComboBoxValueChanged(QString currentText);
     void bothSidesComboBoxValueChanged(QString currentText);
     void pagesPerSideComboBoxValueChanged(QString currentText);
+    void resolutionComboBoxValueChanged(QString currentText);
+    void qualityComboBoxValueChanged(QString currentText);
+    void outputBinComboBoxValueChanged(QString currentText);
+    void finishingsComboBoxValueChanged(QString currentText);
 
 public:
     explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
