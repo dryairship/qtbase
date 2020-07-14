@@ -67,6 +67,11 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         m_generalTab->m_destinationComboBox, SIGNAL(currentIndexChanged(int)),
         this, SLOT(newPrinterSelected(int))
     );
+
+    QObject::connect(
+        m_generalTab->m_remotePrintersCheckBox, SIGNAL(stateChanged(int)),
+        this, SLOT(remotePrintersCheckBoxStateChanged(int))
+    );
 }
 
 void CommonPrintDialogMainLayout::printerListChanged()
@@ -131,6 +136,12 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
         QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(it.key());
         populateComboBox(newComboBox, it.value());
     }
+}
+
+void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
+{
+    qDebug("qCPD: remotePrintersStateChanged: %d", state);
+    m_backend->setRemotePrintersVisible(state == Qt::Checked);
 }
 
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)

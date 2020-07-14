@@ -158,3 +158,11 @@ QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(QStrin
     PrinterObj* p = find_PrinterObj(m_frontendObj, printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
     return CpdbUtils::convertOptionsToQMap(get_all_options(p));
 }
+
+void CommonPrintDialogBackend::setRemotePrintersVisible(bool visible)
+{
+    if(visible)
+        unhide_remote_cups_printers(m_frontendObj);
+    else
+        hide_remote_cups_printers(m_frontendObj);
+}

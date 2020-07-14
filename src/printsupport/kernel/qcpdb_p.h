@@ -67,6 +67,7 @@ public:
     ~CommonPrintDialogBackend();
     QStringList getAvailablePrinters();
     QMap<QString, QStringList> getOptionsForPrinter(QString printerName, QString backendName);
+    void setRemotePrintersVisible(bool visible);
 
 private:
     FrontendObj *m_frontendObj;

@@ -128,6 +128,7 @@ private:
 private Q_SLOTS:
     void printerListChanged();
     void newPrinterSelected(int selectedIndex);
+    void remotePrintersCheckBoxStateChanged(int state);
 
 public:
     explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
