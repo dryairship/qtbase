@@ -13,7 +13,7 @@ class CommonPrintDialogGeneralTab : public QWidget
 private:
     QComboBox *m_destinationComboBox;
     QCheckBox *m_remotePrintersCheckBox;
-    QComboBox *m_paperComboBox;
+    QComboBox *m_paperSizeComboBox;
     QComboBox *m_pagesComboBox;
     QSpinBox *m_copiesSpinBox;
     QCheckBox *m_collateCheckBox;
@@ -131,6 +131,7 @@ private Q_SLOTS:
     void remotePrintersCheckBoxStateChanged(int state);
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);
+    void paperSizeComboBoxValueChanged(QString currentText);
 
 public:
     explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);

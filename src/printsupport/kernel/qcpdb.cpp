@@ -180,3 +180,12 @@ void CommonPrintDialogBackend::setCollateEnabled(bool enabled)
                 : const_cast<char*>("separate-documents-uncollated-copies")
     );
 }
+
+void CommonPrintDialogBackend::setPaperSize(QString paperSize)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("media"),
+        paperSize.toLatin1().data()
+    );
+}

@@ -70,6 +70,7 @@ public:
     QMap<QString, QStringList> getOptionsForCurrentPrinter();
     void setRemotePrintersVisible(bool visible);
     void setCollateEnabled(bool enabled);
+    void setPaperSize(QString paperSize);
 
 private:
     FrontendObj *m_frontendObj;

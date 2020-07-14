@@ -83,6 +83,11 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(collateCheckBoxStateChanged(int))
     );
 
+    QObject::connect(
+        m_generalTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(paperSizeComboBoxValueChanged(QString))
+    );
+
 }
 
 void CommonPrintDialogMainLayout::printerListChanged()
@@ -111,7 +116,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     QSet<QString> usedKeys;
     usedKeys.insert(tr("copies"));
 
-    populateComboBox(m_generalTab->m_paperComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
+    populateComboBox(m_generalTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
     usedKeys.insert(tr("media"));
     populateComboBox(m_generalTab->m_orientationComboBox, options[tr("orientation-requested")]);
     usedKeys.insert(tr("orientation-requested"));
@@ -168,6 +173,12 @@ void CommonPrintDialogMainLayout::collateCheckBoxStateChanged(int state)
     m_backend->setCollateEnabled(state == Qt::Checked);
 }
 
+void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: paperSizeChanged: %s", currentText.toLatin1().data());
+    m_backend->setPaperSize(CpdbUtils::convertReadablePaperSizeToPWG(currentText));
+}
+
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)
 {
     comboBox->clear();
@@ -181,7 +192,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 {
     m_destinationComboBox = new QComboBox;
     m_remotePrintersCheckBox = new QCheckBox;
-    m_paperComboBox = new QComboBox;
+    m_paperSizeComboBox = new QComboBox;
     m_pagesComboBox = new QComboBox;
     m_copiesSpinBox = new QSpinBox;
     m_collateCheckBox = new QCheckBox;
@@ -194,7 +205,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 
     layout->addRow(new QLabel(tr("Destination")), m_destinationComboBox);
     layout->addRow(new QLabel(tr("Remote Printers")), m_remotePrintersCheckBox);
-    layout->addRow(new QLabel(tr("Paper")), m_paperComboBox);
+    layout->addRow(new QLabel(tr("Paper Size")), m_paperSizeComboBox);
     layout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
     layout->addRow(new QLabel(tr("Copies")), m_copiesSpinBox);
     layout->addRow(new QLabel(tr("Collate Pages")), m_collateCheckBox);
