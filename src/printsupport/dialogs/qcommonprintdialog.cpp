@@ -88,6 +88,15 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(paperSizeComboBoxValueChanged(QString))
     );
 
+    QObject::connect(
+        m_generalTab->m_orientationComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(orientationComboBoxValueChanged(QString))
+    );
+
+    QObject::connect(
+        m_generalTab->m_colorModeComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(colorModeComboBoxValueChanged(QString))
+    );
 }
 
 void CommonPrintDialogMainLayout::printerListChanged()
@@ -177,6 +186,18 @@ void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentT
 {
     qDebug("qCPD: paperSizeChanged: %s", currentText.toLatin1().data());
     m_backend->setPaperSize(CpdbUtils::convertReadablePaperSizeToPWG(currentText));
+}
+
+void CommonPrintDialogMainLayout::orientationComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: orientationChanged: %s", currentText.toLatin1().data());
+    m_backend->setOrientation(currentText);
+}
+
+void CommonPrintDialogMainLayout::colorModeComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: colorModeChanged: %s", currentText.toLatin1().data());
+    m_backend->setColorMode(currentText);
 }
 
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)

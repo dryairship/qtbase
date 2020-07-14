@@ -189,3 +189,21 @@ void CommonPrintDialogBackend::setPaperSize(QString paperSize)
         paperSize.toLatin1().data()
     );
 }
+
+void CommonPrintDialogBackend::setOrientation(QString orientation)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("orientation-requested"),
+        orientation.toLatin1().data()
+    );
+}
+
+void CommonPrintDialogBackend::setColorMode(QString colorMode)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("print-color-mode"),
+        colorMode.toLatin1().data()
+    );
+}

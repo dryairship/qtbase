@@ -71,6 +71,8 @@ public:
     void setRemotePrintersVisible(bool visible);
     void setCollateEnabled(bool enabled);
     void setPaperSize(QString paperSize);
+    void setOrientation(QString orientation);
+    void setColorMode(QString colorMode);
 
 private:
     FrontendObj *m_frontendObj;

@@ -132,6 +132,8 @@ private Q_SLOTS:
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);
     void paperSizeComboBoxValueChanged(QString currentText);
+    void orientationComboBoxValueChanged(QString currentText);
+    void colorModeComboBoxValueChanged(QString currentText);
 
 public:
     explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
