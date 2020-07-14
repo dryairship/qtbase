@@ -207,3 +207,21 @@ void CommonPrintDialogBackend::setColorMode(QString colorMode)
         colorMode.toLatin1().data()
     );
 }
+
+void CommonPrintDialogBackend::setPrintBothSidesOption(QString bothSidesOption)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("sides"),
+        bothSidesOption.toLatin1().data()
+    );
+}
+
+void CommonPrintDialogBackend::setPagesPerSide(QString pagesPerSide)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("number-up"),
+        pagesPerSide.toLatin1().data()
+    );
+}

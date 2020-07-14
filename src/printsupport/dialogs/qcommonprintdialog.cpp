@@ -97,6 +97,16 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         m_generalTab->m_colorModeComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(colorModeComboBoxValueChanged(QString))
     );
+
+    QObject::connect(
+        m_pageSetupTab->m_bothSidesComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(bothSidesComboBoxValueChanged(QString))
+    );
+
+    QObject::connect(
+        m_pageSetupTab->m_pagesPerSideComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(pagesPerSideComboBoxValueChanged(QString))
+    );
 }
 
 void CommonPrintDialogMainLayout::printerListChanged()
@@ -198,6 +208,18 @@ void CommonPrintDialogMainLayout::colorModeComboBoxValueChanged(QString currentT
 {
     qDebug("qCPD: colorModeChanged: %s", currentText.toLatin1().data());
     m_backend->setColorMode(currentText);
+}
+
+void CommonPrintDialogMainLayout::bothSidesComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: bothSidesOptionChanged: %s", currentText.toLatin1().data());
+    m_backend->setPrintBothSidesOption(currentText);
+}
+
+void CommonPrintDialogMainLayout::pagesPerSideComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: pagesPerSideChanged: %s", currentText.toLatin1().data());
+    m_backend->setPagesPerSide(currentText);
 }
 
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)

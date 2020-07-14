@@ -134,6 +134,8 @@ private Q_SLOTS:
     void paperSizeComboBoxValueChanged(QString currentText);
     void orientationComboBoxValueChanged(QString currentText);
     void colorModeComboBoxValueChanged(QString currentText);
+    void bothSidesComboBoxValueChanged(QString currentText);
+    void pagesPerSideComboBoxValueChanged(QString currentText);
 
 public:
     explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
