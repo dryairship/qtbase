@@ -152,11 +152,15 @@ QStringList CommonPrintDialogBackend::getAvailablePrinters()
     return printers;
 }
 
-QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForPrinter(QString printerId, QString backend)
+void CommonPrintDialogBackend::setCurrentPrinter(QString printerId, QString backend)
 {
     qDebug("printerId: %s, backend: %s", printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
-    PrinterObj* p = find_PrinterObj(m_frontendObj, printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
-    return CpdbUtils::convertOptionsToQMap(get_all_options(p));
+    m_printerObj = find_PrinterObj(m_frontendObj, printerId.toLocal8Bit().data(), backend.toLocal8Bit().data());
+}
+
+QMap<QString, QStringList> CommonPrintDialogBackend::getOptionsForCurrentPrinter()
+{
+    return CpdbUtils::convertOptionsToQMap(get_all_options(m_printerObj));
 }
 
 void CommonPrintDialogBackend::setRemotePrintersVisible(bool visible)
@@ -165,4 +169,14 @@ void CommonPrintDialogBackend::setRemotePrintersVisible(bool visible)
         unhide_remote_cups_printers(m_frontendObj);
     else
         hide_remote_cups_printers(m_frontendObj);
+}
+
+void CommonPrintDialogBackend::setCollateEnabled(bool enabled)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("multiple-document-handling"),
+        enabled ? const_cast<char*>("separate-documents-collated-copies")
+                : const_cast<char*>("separate-documents-uncollated-copies")
+    );
 }

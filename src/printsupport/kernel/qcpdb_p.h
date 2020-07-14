@@ -66,8 +66,10 @@ public:
     CommonPrintDialogBackend(char* id);
     ~CommonPrintDialogBackend();
     QStringList getAvailablePrinters();
-    QMap<QString, QStringList> getOptionsForPrinter(QString printerName, QString backendName);
+    void setCurrentPrinter(QString printerName, QString backendName);
+    QMap<QString, QStringList> getOptionsForCurrentPrinter();
     void setRemotePrintersVisible(bool visible);
+    void setCollateEnabled(bool enabled);
 
 private:
     FrontendObj *m_frontendObj;

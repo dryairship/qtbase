@@ -72,6 +72,17 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         m_generalTab->m_remotePrintersCheckBox, SIGNAL(stateChanged(int)),
         this, SLOT(remotePrintersCheckBoxStateChanged(int))
     );
+
+    QObject::connect(
+        m_generalTab->m_copiesSpinBox, SIGNAL(valueChanged(int)),
+        this, SLOT(copiesSpinBoxValueChanged(int))
+    );
+
+    QObject::connect(
+        m_generalTab->m_collateCheckBox, SIGNAL(stateChanged(int)),
+        this, SLOT(collateCheckBoxStateChanged(int))
+    );
+
 }
 
 void CommonPrintDialogMainLayout::printerListChanged()
@@ -91,7 +102,8 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
 
     QPair<QString, QString> selectedPrinter = CpdbPrinterListMaintainer::printerList[selectedPrinterName];
     qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
-    QMap<QString, QStringList> options = m_backend->getOptionsForPrinter(selectedPrinter.first, selectedPrinter.second);
+    m_backend->setCurrentPrinter(selectedPrinter.first, selectedPrinter.second);
+    QMap<QString, QStringList> options = m_backend->getOptionsForCurrentPrinter();
     for (auto it = options.begin(); it != options.end(); it++) {
         qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(tr(", ")).toLocal8Bit().data());
     }
@@ -144,6 +156,18 @@ void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
     m_backend->setRemotePrintersVisible(state == Qt::Checked);
 }
 
+void CommonPrintDialogMainLayout::copiesSpinBoxValueChanged(int value)
+{
+    qDebug("qCPD: copiesValueChanged: %d", value);
+    m_generalTab->m_collateCheckBox->setEnabled(value != 1);
+}
+
+void CommonPrintDialogMainLayout::collateCheckBoxStateChanged(int state)
+{
+    qDebug("qCPD: collateStateChanged: %d", state);
+    m_backend->setCollateEnabled(state == Qt::Checked);
+}
+
 void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)
 {
     comboBox->clear();
@@ -177,7 +201,9 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     layout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
     layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
 
+    m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
+    m_collateCheckBox->setEnabled(false);
 
     setLayout(layout);
 }
