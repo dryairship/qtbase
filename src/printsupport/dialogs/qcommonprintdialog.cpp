@@ -153,7 +153,8 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     }
 
     QSet<QString> usedKeys;
-    usedKeys.insert(tr("copies"));
+    usedKeys.insert(tr("copies")); // will be an integer in a spin box
+    usedKeys.insert(tr("multiple-document-handling")); // will be a check box
 
     populateComboBox(m_generalTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
     usedKeys.insert(tr("media"));
@@ -418,8 +419,14 @@ CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
 QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
 {
     QComboBox *comboBox = new QComboBox;
-    comboBox->setProperty("name", name);
+    comboBox->setProperty("optionName", name);
     m_layout->addRow(new QLabel(name), comboBox);
+
+    QObject::connect(
+        comboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(extraOptionsComboBoxValueChanged(QString))
+    );
+
     return comboBox;
 }
 
@@ -428,4 +435,11 @@ void CommonPrintDialogExtraOptionsTab::deleteAllComboBoxes()
     int rowCount = m_layout->rowCount();
     for(int i=rowCount-1; i>=0; i--)
         m_layout->removeRow(i);
+}
+
+void CommonPrintDialogExtraOptionsTab::extraOptionsComboBoxValueChanged(QString currentText)
+{
+    QString optionName = qvariant_cast<QString>(sender()->property("optionName"));
+    qDebug("qCPD: extraOptionChanged: %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
+    m_backend->setExtraOption(optionName, currentText);
 }

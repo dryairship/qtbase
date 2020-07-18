@@ -79,6 +79,7 @@ public:
     void setQuality(QString quality);
     void setOutputBin(QString outputBin);
     void setFinishings(QString finishings);
+    void setExtraOption(QString optionName, QString optionValue);
 
 private:
     FrontendObj *m_frontendObj;

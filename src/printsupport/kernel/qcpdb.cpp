@@ -260,3 +260,12 @@ void CommonPrintDialogBackend::setFinishings(QString finishings)
         finishings.toLatin1().data()
     );
 }
+
+void CommonPrintDialogBackend::setExtraOption(QString optionName, QString optionValue)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        optionName.toLatin1().data(),
+        optionValue.toLatin1().data()
+    );
+}
