@@ -304,15 +304,21 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 
     QFormLayout *layout = new QFormLayout;
 
+    QGroupBox *copiesGroupBox = new QGroupBox(tr("Copies"));
+    QFormLayout *copiesGroupBoxLayout = new QFormLayout;
+    copiesGroupBoxLayout->addRow(new QLabel(tr("Copies")), m_copiesSpinBox);
+    copiesGroupBoxLayout->addRow(new QLabel(tr("Collate Pages")), m_collateCheckBox);
+    copiesGroupBoxLayout->addRow(new QLabel(tr("Reverse")), m_reverseCheckBox);
+    copiesGroupBox->setLayout(copiesGroupBoxLayout);
+
+
     layout->addRow(new QLabel(tr("Destination")), m_destinationComboBox);
     layout->addRow(new QLabel(tr("Remote Printers")), m_remotePrintersCheckBox);
     layout->addRow(new QLabel(tr("Paper Size")), m_paperSizeComboBox);
     layout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
-    layout->addRow(new QLabel(tr("Copies")), m_copiesSpinBox);
-    layout->addRow(new QLabel(tr("Collate Pages")), m_collateCheckBox);
-    layout->addRow(new QLabel(tr("Reverse")), m_reverseCheckBox);
     layout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
     layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
+    layout->addRow(copiesGroupBox);
 
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
@@ -336,14 +342,20 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 
     QFormLayout *layout = new QFormLayout;
 
-    layout->addRow(new QLabel(tr("Layout")));
-    layout->addRow(new QLabel(tr("Print Both Sides")), m_bothSidesComboBox);
-    layout->addRow(new QLabel(tr("Pages Per Side")), m_pagesPerSideComboBox);
-    layout->addRow(new QLabel(tr("Scale")), m_scaleSpinBox);
-    layout->addRow(new QLabel(tr("")));
-    layout->addRow(new QLabel(tr("Paper")));
-    layout->addRow(new QLabel(tr("Paper Source")), m_paperSourceComboBox);
+    QGroupBox *layoutGroupBox = new QGroupBox(tr("Layout"));
+    QFormLayout *layoutGroupBoxLayout = new QFormLayout;
+    layoutGroupBoxLayout->addRow(new QLabel(tr("Print Both Sides")), m_bothSidesComboBox);
+    layoutGroupBoxLayout->addRow(new QLabel(tr("Pages Per Side")), m_pagesPerSideComboBox);
+    layoutGroupBoxLayout->addRow(new QLabel(tr("Scale")), m_scaleSpinBox);
+    layoutGroupBox->setLayout(layoutGroupBoxLayout);
 
+    QGroupBox *paperGroupBox = new QGroupBox(tr("Paper"));
+    QFormLayout *paperGroupBoxLayout = new QFormLayout;
+    paperGroupBoxLayout->addRow(new QLabel(tr("Paper Source")), m_paperSourceComboBox);
+    paperGroupBox->setLayout(paperGroupBoxLayout);
+
+    layout->addRow(layoutGroupBox);
+    layout->addRow(paperGroupBox);
     setLayout(layout);
 
     (void)parent;
