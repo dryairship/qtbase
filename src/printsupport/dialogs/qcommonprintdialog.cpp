@@ -84,6 +84,11 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
+        m_generalTab->m_reverseCheckBox, SIGNAL(stateChanged(int)),
+        this, SLOT(reverseCheckBoxStateChanged(int))
+    );
+
+    QObject::connect(
         m_generalTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(paperSizeComboBoxValueChanged(QString))
     );
@@ -155,6 +160,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int i)
     QSet<QString> usedKeys;
     usedKeys.insert(tr("copies")); // will be an integer in a spin box
     usedKeys.insert(tr("multiple-document-handling")); // will be a check box
+    usedKeys.insert(tr("page-delivery")); // will be a check box
 
     populateComboBox(m_generalTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
     usedKeys.insert(tr("media"));
@@ -211,6 +217,12 @@ void CommonPrintDialogMainLayout::collateCheckBoxStateChanged(int state)
 {
     qDebug("qCPD: collateStateChanged: %d", state);
     m_backend->setCollateEnabled(state == Qt::Checked);
+}
+
+void CommonPrintDialogMainLayout::reverseCheckBoxStateChanged(int state)
+{
+    qDebug("qCPD: reverseStateChanged: %d", state);
+    m_backend->setReversePageOrder(state == Qt::Checked);
 }
 
 void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
@@ -284,6 +296,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     m_pagesComboBox = new QComboBox;
     m_copiesSpinBox = new QSpinBox;
     m_collateCheckBox = new QCheckBox;
+    m_reverseCheckBox = new QCheckBox;
     m_orientationComboBox = new QComboBox;
     m_colorModeComboBox = new QComboBox;
 
@@ -297,6 +310,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     layout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
     layout->addRow(new QLabel(tr("Copies")), m_copiesSpinBox);
     layout->addRow(new QLabel(tr("Collate Pages")), m_collateCheckBox);
+    layout->addRow(new QLabel(tr("Reverse")), m_reverseCheckBox);
     layout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
     layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
 

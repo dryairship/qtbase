@@ -181,6 +181,16 @@ void CommonPrintDialogBackend::setCollateEnabled(bool enabled)
     );
 }
 
+void CommonPrintDialogBackend::setReversePageOrder(bool reverse)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("page-delivery"),
+        reverse ? const_cast<char*>("reverse-order")
+                : const_cast<char*>("same-order")
+    );
+}
+
 void CommonPrintDialogBackend::setPaperSize(QString paperSize)
 {
     add_setting_to_printer(

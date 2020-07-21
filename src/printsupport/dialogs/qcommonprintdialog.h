@@ -17,6 +17,7 @@ private:
     QComboBox *m_pagesComboBox;
     QSpinBox *m_copiesSpinBox;
     QCheckBox *m_collateCheckBox;
+    QCheckBox *m_reverseCheckBox;
     QComboBox *m_orientationComboBox;
     QComboBox *m_colorModeComboBox;
 
@@ -134,6 +135,7 @@ private Q_SLOTS:
     void remotePrintersCheckBoxStateChanged(int state);
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);
+    void reverseCheckBoxStateChanged(int state);
     void paperSizeComboBoxValueChanged(QString currentText);
     void orientationComboBoxValueChanged(QString currentText);
     void colorModeComboBoxValueChanged(QString currentText);

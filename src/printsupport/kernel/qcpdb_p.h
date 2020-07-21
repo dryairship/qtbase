@@ -70,6 +70,7 @@ public:
     QMap<QString, QStringList> getOptionsForCurrentPrinter();
     void setRemotePrintersVisible(bool visible);
     void setCollateEnabled(bool enabled);
+    void setReversePageOrder(bool reverse);
     void setPaperSize(QString paperSize);
     void setOrientation(QString orientation);
     void setColorMode(QString colorMode);
