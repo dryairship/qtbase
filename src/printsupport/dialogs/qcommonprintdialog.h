@@ -11,7 +11,7 @@ class CommonPrintDialogGeneralTab : public QWidget
     Q_OBJECT
 
 private:
-    QComboBox *m_destinationComboBox;
+    QTableWidget *m_destinationWidget;
     QCheckBox *m_remotePrintersCheckBox;
     QComboBox *m_paperSizeComboBox;
     QComboBox *m_pagesComboBox;
@@ -131,7 +131,7 @@ private:
 
 private Q_SLOTS:
     void printerListChanged();
-    void newPrinterSelected(int selectedIndex);
+    void newPrinterSelected(int row);
     void remotePrintersCheckBoxStateChanged(int state);
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);

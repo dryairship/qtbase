@@ -27,7 +27,20 @@ using Option = _Option;
 class _Options;
 using Options = _Options;
 
-typedef QMap<QString, QPair<QString, QString>> CpdbPrinterList;
+class CpdbPrinter : public QObject
+{
+    Q_OBJECT
+public:
+    QString id;
+    QString backend;
+    QString name;
+    QString location;
+    QString state;
+
+    CpdbPrinter(QString id, QString backend, QString name, QString location, QString state);
+};
+
+typedef QMap<QString, CpdbPrinter*> CpdbPrinterList;
 
 class CpdbPrinterListMaintainer : public QObject
 {
@@ -65,8 +78,8 @@ public:
     CommonPrintDialogBackend();
     CommonPrintDialogBackend(char* id);
     ~CommonPrintDialogBackend();
-    QStringList getAvailablePrinters();
-    void setCurrentPrinter(QString printerName, QString backendName);
+    CpdbPrinterList getAvailablePrinters();
+    void setCurrentPrinter(QString printerId, QString backendName);
     QMap<QString, QStringList> getOptionsForCurrentPrinter();
     void setRemotePrintersVisible(bool visible);
     void setCollateEnabled(bool enabled);

@@ -8,6 +8,12 @@ extern "C" {
     #include <cpdb-libs-frontend.h> 
 }
 
+CpdbPrinter::CpdbPrinter(QString id, QString backend, QString name, QString location, QString state)
+    : id(id), backend(backend), name(name), location(location), state(state)
+{
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,8 +45,13 @@ int CpdbPrinterListMaintainer::addPrinter(PrinterObj *p)
 {
     qDebug("Adding printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
-    printerList[QString::fromUtf8(p->name)] = 
-        qMakePair(QString::fromUtf8(p->id), QString::fromUtf8(p->backend_name));
+    printerList[QString::fromUtf8(p->id)] = new CpdbPrinter(
+        QString::fromUtf8(p->id),
+        QString::fromUtf8(p->backend_name),
+        QString::fromUtf8(p->name),
+        QString::fromUtf8(p->location),
+        QString::fromUtf8(p->state)
+    );
     emit (getInstance()->printerListChanged());
 
     return 0;
@@ -50,7 +61,7 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
 {
     qDebug("Removing printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
-    printerList.remove(QString::fromUtf8(p->name));
+    printerList.remove(QString::fromUtf8(p->id));
     emit (getInstance()->printerListChanged());
 
     return 0;
@@ -144,12 +155,9 @@ CommonPrintDialogBackend::~CommonPrintDialogBackend()
     disconnect_from_dbus(m_frontendObj);
 }
 
-QStringList CommonPrintDialogBackend::getAvailablePrinters()
+CpdbPrinterList CommonPrintDialogBackend::getAvailablePrinters()
 {
-    QStringList printers;
-    for(auto it : CpdbPrinterListMaintainer::printerList)
-        printers << it.first;
-    return printers;
+    return CpdbPrinterListMaintainer::printerList;
 }
 
 void CommonPrintDialogBackend::setCurrentPrinter(QString printerId, QString backend)

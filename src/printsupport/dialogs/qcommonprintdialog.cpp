@@ -64,7 +64,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
-        m_generalTab->m_destinationComboBox, SIGNAL(currentIndexChanged(int)),
+        m_generalTab->m_destinationWidget, SIGNAL(currentCellChanged(int, int, int, int)),
         this, SLOT(newPrinterSelected(int))
     );
 
@@ -138,20 +138,27 @@ void CommonPrintDialogMainLayout::printerListChanged()
 {
     qDebug("qCPD: Updating Printers list");
 
-    const QStringList printers = m_backend->getAvailablePrinters();
-    m_generalTab->m_destinationComboBox->clear();
-    m_generalTab->m_destinationComboBox->addItems(printers);
+    CpdbPrinterList printers = m_backend->getAvailablePrinters();
+    m_generalTab->m_destinationWidget->setRowCount(printers.size());
+    int count = 0;
+    for(auto printer : printers) {
+        m_generalTab->m_destinationWidget->setItem(count, 0, new QTableWidgetItem(printer->name));
+        m_generalTab->m_destinationWidget->setItem(count, 1, new QTableWidgetItem(printer->location));
+        m_generalTab->m_destinationWidget->setItem(count, 2, new QTableWidgetItem(printer->state));
+        m_generalTab->m_destinationWidget->setItem(count, 3, new QTableWidgetItem(printer->id));
+        m_generalTab->m_destinationWidget->setItem(count, 4, new QTableWidgetItem(printer->backend));
+        count ++;
+    }
+    m_generalTab->m_destinationWidget->setCurrentCell(0, 0);
+    newPrinterSelected(0);
 }
 
-void CommonPrintDialogMainLayout::newPrinterSelected(int i)
+void CommonPrintDialogMainLayout::newPrinterSelected(int row)
 {
-    QString selectedPrinterName = m_generalTab->m_destinationComboBox->currentText();
-    if(!CpdbPrinterListMaintainer::printerList.contains(selectedPrinterName))
-        return;
-
-    QPair<QString, QString> selectedPrinter = CpdbPrinterListMaintainer::printerList[selectedPrinterName];
-    qDebug("qCPD: New Printer Selected: %d, %s", i, selectedPrinterName.toLocal8Bit().data());
-    m_backend->setCurrentPrinter(selectedPrinter.first, selectedPrinter.second);
+    QString id = m_generalTab->m_destinationWidget->item(row, 3)->text();
+    QString backend = m_generalTab->m_destinationWidget->item(row, 4)->text();
+    qDebug("qCPD: New Printer Selected: %s, %s", id.toLocal8Bit().data(), backend.toLocal8Bit().data());
+    m_backend->setCurrentPrinter(id, backend);
     QMap<QString, QStringList> options = m_backend->getOptionsForCurrentPrinter();
     for (auto it = options.begin(); it != options.end(); it++) {
         qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(tr(", ")).toLocal8Bit().data());
@@ -290,7 +297,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : QWidget(parent), m_backend(backend)
 {
-    m_destinationComboBox = new QComboBox;
+    m_destinationWidget = new QTableWidget(0, 5, this);
     m_remotePrintersCheckBox = new QCheckBox;
     m_paperSizeComboBox = new QComboBox;
     m_pagesComboBox = new QComboBox;
@@ -312,7 +319,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     copiesGroupBox->setLayout(copiesGroupBoxLayout);
 
 
-    layout->addRow(new QLabel(tr("Destination")), m_destinationComboBox);
+    layout->addRow(m_destinationWidget);
     layout->addRow(new QLabel(tr("Remote Printers")), m_remotePrintersCheckBox);
     layout->addRow(new QLabel(tr("Paper Size")), m_paperSizeComboBox);
     layout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
@@ -323,6 +330,15 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
     m_collateCheckBox->setEnabled(false);
+
+    QStringList destinationWidgetHeaders = {tr("Printer"), tr("Location"), tr("State")};
+    m_destinationWidget->setHorizontalHeaderLabels(destinationWidgetHeaders);
+    m_destinationWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    m_destinationWidget->horizontalHeader()->setHighlightSections(false);
+    m_destinationWidget->verticalHeader()->setHighlightSections(false);
+    m_destinationWidget->setColumnHidden(3, true);
+    m_destinationWidget->setColumnHidden(4, true);
+    m_destinationWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     setLayout(layout);
 }
