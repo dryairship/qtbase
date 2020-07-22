@@ -89,17 +89,17 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
-        m_generalTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
+        m_pageSetupTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(paperSizeComboBoxValueChanged(QString))
     );
 
     QObject::connect(
-        m_generalTab->m_orientationComboBox, SIGNAL(currentTextChanged(QString)),
+        m_pageSetupTab->m_orientationComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(orientationComboBoxValueChanged(QString))
     );
 
     QObject::connect(
-        m_generalTab->m_colorModeComboBox, SIGNAL(currentTextChanged(QString)),
+        m_optionsTab->m_colorModeComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(colorModeComboBoxValueChanged(QString))
     );
 
@@ -129,7 +129,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
-        m_optionsTab->m_outputBinComboBox, SIGNAL(currentTextChanged(QString)),
+        m_pageSetupTab->m_outputBinComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(outputBinComboBoxValueChanged(QString))
     );
 
@@ -174,26 +174,25 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     usedKeys.insert(tr("multiple-document-handling")); // will be a check box
     usedKeys.insert(tr("page-delivery")); // will be a check box
 
-    populateComboBox(m_generalTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
-    usedKeys.insert(tr("media"));
-    populateComboBox(m_generalTab->m_orientationComboBox, options[tr("orientation-requested")]);
-    usedKeys.insert(tr("orientation-requested"));
-    populateComboBox(m_generalTab->m_colorModeComboBox, options[tr("print-color-mode")]);
-    usedKeys.insert(tr("print-color-mode"));
-
     populateComboBox(m_pageSetupTab->m_bothSidesComboBox, options[tr("sides")]);
     usedKeys.insert(tr("sides"));
     populateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options[tr("number-up")]);
     usedKeys.insert(tr("number-up"));
     populateComboBox(m_pageSetupTab->m_scaleComboBox, options[tr("print-scaling")]);
     usedKeys.insert(tr("print-scaling"));
+    populateComboBox(m_pageSetupTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
+    usedKeys.insert(tr("media"));
+    populateComboBox(m_pageSetupTab->m_orientationComboBox, options[tr("orientation-requested")]);
+    usedKeys.insert(tr("orientation-requested"));
+    populateComboBox(m_pageSetupTab->m_outputBinComboBox, options[tr("output-bin")]);
+    usedKeys.insert(tr("output-bin"));
 
     populateComboBox(m_optionsTab->m_resolutionComboBox, options[tr("printer-resolution")]);
     usedKeys.insert(tr("printer-resolution"));
     populateComboBox(m_optionsTab->m_qualityComboBox, options[tr("print-quality")]);
     usedKeys.insert(tr("print-quality"));
-    populateComboBox(m_optionsTab->m_outputBinComboBox, options[tr("output-bin")]);
-    usedKeys.insert(tr("output-bin"));
+    populateComboBox(m_optionsTab->m_colorModeComboBox, options[tr("print-color-mode")]);
+    usedKeys.insert(tr("print-color-mode"));
     populateComboBox(m_optionsTab->m_finishingsComboBox, options[tr("finishings")]);
     usedKeys.insert(tr("finishings"));
 
@@ -312,17 +311,20 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 {
     m_destinationWidget = new QTableWidget(0, 5, this);
     m_remotePrintersCheckBox = new QCheckBox;
-    m_paperSizeComboBox = new QComboBox;
     m_pagesComboBox = new QComboBox;
     m_copiesSpinBox = new QSpinBox;
     m_collateCheckBox = new QCheckBox;
     m_reverseCheckBox = new QCheckBox;
-    m_orientationComboBox = new QComboBox;
-    m_colorModeComboBox = new QComboBox;
 
     m_pagesComboBox->addItem(tr("All"));
 
     QFormLayout *layout = new QFormLayout;
+
+    QGroupBox *printerGroupBox = new QGroupBox(tr("Printer"));
+    QFormLayout *printerGroupBoxLayout = new QFormLayout;
+    printerGroupBoxLayout->addRow(m_destinationWidget);
+    printerGroupBoxLayout->addRow(new QLabel(tr("Remote Printers")), m_remotePrintersCheckBox);
+    printerGroupBox->setLayout(printerGroupBoxLayout);
 
     QGroupBox *copiesGroupBox = new QGroupBox(tr("Copies"));
     QFormLayout *copiesGroupBoxLayout = new QFormLayout;
@@ -331,13 +333,13 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     copiesGroupBoxLayout->addRow(new QLabel(tr("Reverse")), m_reverseCheckBox);
     copiesGroupBox->setLayout(copiesGroupBoxLayout);
 
+    QGroupBox *rangeGroupBox = new QGroupBox(tr("Range"));
+    QFormLayout *rangeGroupBoxLayout = new QFormLayout;
+    rangeGroupBoxLayout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
+    rangeGroupBox->setLayout(rangeGroupBoxLayout);
 
-    layout->addRow(m_destinationWidget);
-    layout->addRow(new QLabel(tr("Remote Printers")), m_remotePrintersCheckBox);
-    layout->addRow(new QLabel(tr("Paper Size")), m_paperSizeComboBox);
-    layout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
-    layout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
-    layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
+    layout->addRow(printerGroupBox);
+    layout->addRow(rangeGroupBox);
     layout->addRow(copiesGroupBox);
 
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
@@ -365,6 +367,9 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     m_scaleComboBox = new QComboBox;
     m_paperSourceComboBox = new QComboBox;
     m_pageRangeComboBox = new QComboBox;
+    m_paperSizeComboBox = new QComboBox;
+    m_orientationComboBox = new QComboBox;
+    m_outputBinComboBox = new QComboBox;
 
     QFormLayout *layout = new QFormLayout;
 
@@ -378,6 +383,9 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     QGroupBox *paperGroupBox = new QGroupBox(tr("Paper"));
     QFormLayout *paperGroupBoxLayout = new QFormLayout;
     paperGroupBoxLayout->addRow(new QLabel(tr("Paper Source")), m_paperSourceComboBox);
+    paperGroupBoxLayout->addRow(new QLabel(tr("Output Bin")), m_outputBinComboBox);
+    paperGroupBoxLayout->addRow(new QLabel(tr("Paper Size")), m_paperSizeComboBox);
+    paperGroupBoxLayout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
     paperGroupBox->setLayout(paperGroupBoxLayout);
 
     layout->addRow(layoutGroupBox);
@@ -397,7 +405,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_marginRightValue = new QLineEdit;
     m_resolutionComboBox = new QComboBox;
     m_qualityComboBox = new QComboBox;
-    m_outputBinComboBox = new QComboBox;
+    m_colorModeComboBox = new QComboBox;
     m_finishingsComboBox = new QComboBox;
     m_ippAttributeFidelityComboBox = new QComboBox;
 
@@ -411,7 +419,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_layout->addRow(new QLabel(tr("")));
     m_layout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
     m_layout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
-    m_layout->addRow(new QLabel(tr("Output Bin")), m_outputBinComboBox);
+    m_layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
     m_layout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
 
     setLayout(m_layout);

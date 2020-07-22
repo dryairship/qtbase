@@ -13,13 +13,10 @@ class CommonPrintDialogGeneralTab : public QWidget
 private:
     QTableWidget *m_destinationWidget;
     QCheckBox *m_remotePrintersCheckBox;
-    QComboBox *m_paperSizeComboBox;
     QComboBox *m_pagesComboBox;
     QSpinBox *m_copiesSpinBox;
     QCheckBox *m_collateCheckBox;
     QCheckBox *m_reverseCheckBox;
-    QComboBox *m_orientationComboBox;
-    QComboBox *m_colorModeComboBox;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
@@ -33,11 +30,14 @@ class CommonPrintDialogPageSetupTab : public QWidget
     Q_OBJECT
 
 private:
+    QComboBox *m_paperSizeComboBox;
+    QComboBox *m_orientationComboBox;
     QComboBox *m_bothSidesComboBox;
     QComboBox *m_pagesPerSideComboBox;
     QComboBox *m_scaleComboBox;
     QComboBox *m_paperSourceComboBox;
     QComboBox *m_pageRangeComboBox;
+    QComboBox *m_outputBinComboBox;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
@@ -57,9 +57,9 @@ private:
     QLineEdit *m_marginRightValue;
     QComboBox *m_resolutionComboBox;
     QComboBox *m_qualityComboBox;
-    QComboBox *m_outputBinComboBox;
     QComboBox *m_finishingsComboBox;
     QComboBox *m_ippAttributeFidelityComboBox;
+    QComboBox *m_colorModeComboBox;
     QFormLayout *m_layout;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
