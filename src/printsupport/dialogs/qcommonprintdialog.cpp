@@ -114,6 +114,11 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
+        m_pageSetupTab->m_scaleComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(scaleComboBoxValueChanged(QString))
+    );
+
+    QObject::connect(
         m_optionsTab->m_resolutionComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(resolutionComboBoxValueChanged(QString))
     );
@@ -180,6 +185,8 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     usedKeys.insert(tr("sides"));
     populateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options[tr("number-up")]);
     usedKeys.insert(tr("number-up"));
+    populateComboBox(m_pageSetupTab->m_scaleComboBox, options[tr("print-scaling")]);
+    usedKeys.insert(tr("print-scaling"));
 
     populateComboBox(m_optionsTab->m_resolutionComboBox, options[tr("printer-resolution")]);
     usedKeys.insert(tr("printer-resolution"));
@@ -260,6 +267,12 @@ void CommonPrintDialogMainLayout::pagesPerSideComboBoxValueChanged(QString curre
 {
     qDebug("qCPD: pagesPerSideChanged: %s", currentText.toLatin1().data());
     m_backend->setPagesPerSide(currentText);
+}
+
+void CommonPrintDialogMainLayout::scaleComboBoxValueChanged(QString currentText)
+{
+    qDebug("qCPD: scaleChanged: %s", currentText.toLatin1().data());
+    m_backend->setScale(currentText);
 }
 
 void CommonPrintDialogMainLayout::resolutionComboBoxValueChanged(QString currentText)
@@ -349,10 +362,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 {
     m_bothSidesComboBox = new QComboBox;
     m_pagesPerSideComboBox = new QComboBox;
-    m_scaleSpinBox = new QSpinBox;
-    m_scaleSpinBox->setRange(0, 200);
-    m_scaleSpinBox->setValue(100);
-    m_scaleSpinBox->setSuffix(tr("%"));
+    m_scaleComboBox = new QComboBox;
     m_paperSourceComboBox = new QComboBox;
     m_pageRangeComboBox = new QComboBox;
 
@@ -362,7 +372,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     QFormLayout *layoutGroupBoxLayout = new QFormLayout;
     layoutGroupBoxLayout->addRow(new QLabel(tr("Print Both Sides")), m_bothSidesComboBox);
     layoutGroupBoxLayout->addRow(new QLabel(tr("Pages Per Side")), m_pagesPerSideComboBox);
-    layoutGroupBoxLayout->addRow(new QLabel(tr("Scale")), m_scaleSpinBox);
+    layoutGroupBoxLayout->addRow(new QLabel(tr("Scale")), m_scaleComboBox);
     layoutGroupBox->setLayout(layoutGroupBoxLayout);
 
     QGroupBox *paperGroupBox = new QGroupBox(tr("Paper"));

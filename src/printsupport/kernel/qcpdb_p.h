@@ -89,6 +89,7 @@ public:
     void setColorMode(QString colorMode);
     void setPrintBothSidesOption(QString colorMode);
     void setPagesPerSide(QString pagesPerSide);
+    void setScale(QString scale);
     void setResolution(QString resolution);
     void setQuality(QString quality);
     void setOutputBin(QString outputBin);

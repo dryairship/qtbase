@@ -243,6 +243,16 @@ void CommonPrintDialogBackend::setPagesPerSide(QString pagesPerSide)
         pagesPerSide.toLatin1().data()
     );
 }
+
+void CommonPrintDialogBackend::setScale(QString scale)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("print-scaling"),
+        scale.toLatin1().data()
+    );
+}
+
 void CommonPrintDialogBackend::setResolution(QString resolution)
 {
     add_setting_to_printer(

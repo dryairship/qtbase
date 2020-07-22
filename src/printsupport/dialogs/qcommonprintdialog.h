@@ -35,7 +35,7 @@ class CommonPrintDialogPageSetupTab : public QWidget
 private:
     QComboBox *m_bothSidesComboBox;
     QComboBox *m_pagesPerSideComboBox;
-    QSpinBox *m_scaleSpinBox;
+    QComboBox *m_scaleComboBox;
     QComboBox *m_paperSourceComboBox;
     QComboBox *m_pageRangeComboBox;
 
@@ -141,6 +141,7 @@ private Q_SLOTS:
     void colorModeComboBoxValueChanged(QString currentText);
     void bothSidesComboBoxValueChanged(QString currentText);
     void pagesPerSideComboBoxValueChanged(QString currentText);
+    void scaleComboBoxValueChanged(QString currentText);
     void resolutionComboBoxValueChanged(QString currentText);
     void qualityComboBoxValueChanged(QString currentText);
     void outputBinComboBoxValueChanged(QString currentText);
