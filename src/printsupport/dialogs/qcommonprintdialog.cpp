@@ -8,23 +8,24 @@
 
 using namespace std;
 
-QCommonPrintDialog::QCommonPrintDialog(QWidget *parent) :
-    QDialog (parent)
+QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
+    : QDialog (parent)
 {
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
     m_backend = make_shared<CommonPrintDialogBackend>(id);
 
     resize(500, 480);
-    m_mainLayout = new CommonPrintDialogMainLayout(m_backend, parent);
+    m_mainLayout = new CommonPrintDialogMainLayout(this, m_backend, parent);
     setLayout(m_mainLayout);
 }
 
-QCommonPrintDialog::~QCommonPrintDialog() {
+QCommonPrintDialog::~QCommonPrintDialog()
+{
 }
 
 CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
-    shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
-    : m_backend(backend)
+    QCommonPrintDialog* commonPrintDialog, shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
+    : m_commonPrintDialog(commonPrintDialog), m_backend(backend)
 {
     m_tabWidget = new QTabWidget;
 
@@ -58,6 +59,16 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
 
 void CommonPrintDialogMainLayout::connectSignalsAndSlots()
 {
+    QObject::connect(
+        m_printButton, SIGNAL(clicked()),
+        m_commonPrintDialog, SLOT(accept())
+    );
+
+    QObject::connect(
+        m_cancelButton, SIGNAL(clicked()),
+        m_commonPrintDialog, SLOT(reject())
+    );
+
     QObject::connect(
         CpdbPrinterListMaintainer::getInstance(), SIGNAL(printerListChanged()),
         this, SLOT(printerListChanged())

@@ -6,6 +6,8 @@
 
 #include <private/qcpdb_p.h>
 
+class QCommonPrintDialog;
+
 class CommonPrintDialogGeneralTab : public QWidget
 {
     Q_OBJECT
@@ -114,6 +116,7 @@ class CommonPrintDialogMainLayout : public QHBoxLayout
     Q_OBJECT
 
 private:
+    QCommonPrintDialog *m_commonPrintDialog;
     QPushButton *m_printButton;
     QPushButton *m_cancelButton;
     
@@ -148,7 +151,8 @@ private Q_SLOTS:
     void finishingsComboBoxValueChanged(QString currentText);
 
 public:
-    explicit CommonPrintDialogMainLayout(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
+    explicit CommonPrintDialogMainLayout(QCommonPrintDialog *commonPrintDialog,
+        std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent = nullptr);
 
 };
 

@@ -1113,11 +1113,21 @@ void QPrintDialog::setVisible(bool visible)
 
 int QPrintDialog::exec()
 {
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    Q_D(QPrintDialog);
+    return d->qcpd->exec();
+#else
     return QAbstractPrintDialog::exec();
+#endif
 }
 
 void QPrintDialog::accept()
 {
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+    QDialog::accept();
+    return;
+#endif
+
     Q_D(QPrintDialog);
 #if QT_CONFIG(cups)
     if (d->options.pagesRadioButton->isChecked() && !isValidPagesString(d->options.pagesLineEdit->text())) {
