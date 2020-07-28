@@ -5,14 +5,13 @@
 
 #include <private/qcpdb_p.h>
 #include "qcommonprintdialog.h"
-
-using namespace std;
+QT_BEGIN_NAMESPACE
 
 QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
     : QDialog (parent)
 {
     char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    m_backend = make_shared<CommonPrintDialogBackend>(id);
+    m_backend = std::make_shared<CommonPrintDialogBackend>(id);
 
     resize(500, 480);
     m_mainLayout = new CommonPrintDialogMainLayout(this, m_backend, parent);
@@ -24,7 +23,7 @@ QCommonPrintDialog::~QCommonPrintDialog()
 }
 
 CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
-    QCommonPrintDialog* commonPrintDialog, shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
+    QCommonPrintDialog* commonPrintDialog, std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
     : m_commonPrintDialog(commonPrintDialog), m_backend(backend)
 {
     m_tabWidget = new QTabWidget;
@@ -317,7 +316,7 @@ void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringL
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
-    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
+    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : QWidget(parent), m_backend(backend)
 {
     m_destinationWidget = new QTableWidget(0, 5, this);
@@ -370,7 +369,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 }
 
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
-    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
+    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
     m_bothSidesComboBox = new QComboBox;
@@ -407,7 +406,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 }
 
 CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
-    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
+    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
     m_marginTopValue = new QLineEdit;
@@ -439,7 +438,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
 }
 
 CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
-    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
+    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
     QWidget *jobsWidget = new QWidget;
@@ -478,7 +477,7 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
 }
 
 CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
-    shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
+    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
     m_layout = new QFormLayout;
@@ -514,3 +513,5 @@ void CommonPrintDialogExtraOptionsTab::extraOptionsComboBoxValueChanged(QString 
     qDebug("qCPD: extraOptionChanged: %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
     m_backend->setExtraOption(optionName, currentText);
 }
+
+QT_END_NAMESPACE

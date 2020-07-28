@@ -4,9 +4,10 @@
 #include <memory>
 #include <QtWidgets/QtWidgets>
 
-#include <private/qcpdb_p.h>
+QT_BEGIN_NAMESPACE
 
 class QCommonPrintDialog;
+class CommonPrintDialogBackend;
 
 class CommonPrintDialogGeneralTab : public QWidget
 {
@@ -167,5 +168,7 @@ public:
     explicit QCommonPrintDialog(QWidget *parent = nullptr);
     ~QCommonPrintDialog();
 };
+
+QT_END_NAMESPACE
 
 #endif // QCOMMONPRINTDIALOG_H
