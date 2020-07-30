@@ -3,10 +3,14 @@
 
 #include <memory>
 #include <QtWidgets/QtWidgets>
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
-#include <private/qcpdb_p.h>
+QT_REQUIRE_CONFIG(cpdb);
+
+QT_BEGIN_NAMESPACE
 
 class QCommonPrintDialog;
+class CommonPrintDialogBackend;
 
 class CommonPrintDialogGeneralTab : public QWidget
 {
@@ -165,7 +169,8 @@ private:
 
 public:
     explicit QCommonPrintDialog(QWidget *parent = nullptr);
-    ~QCommonPrintDialog();
 };
+
+QT_END_NAMESPACE
 
 #endif // QCOMMONPRINTDIALOG_H
