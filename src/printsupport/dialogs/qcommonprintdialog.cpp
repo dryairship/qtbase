@@ -20,10 +20,6 @@ QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
     setLayout(m_mainLayout);
 }
 
-QCommonPrintDialog::~QCommonPrintDialog()
-{
-}
-
 CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     QCommonPrintDialog* commonPrintDialog, std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
     : m_commonPrintDialog(commonPrintDialog), m_backend(backend)

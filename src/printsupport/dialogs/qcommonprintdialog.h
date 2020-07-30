@@ -169,7 +169,6 @@ private:
 
 public:
     explicit QCommonPrintDialog(QWidget *parent = nullptr);
-    ~QCommonPrintDialog();
 };
 
 QT_END_NAMESPACE
