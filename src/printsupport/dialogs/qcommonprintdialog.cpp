@@ -10,8 +10,10 @@ QT_BEGIN_NAMESPACE
 QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
     : QDialog (parent)
 {
-    char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
-    m_backend = std::make_shared<CommonPrintDialogBackend>(id);
+    // Does the commented line cause a dangling pointer?
+    //char* id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1().data();
+    auto id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1();
+    m_backend = std::make_shared<CommonPrintDialogBackend>(id.data());
 
     resize(500, 480);
     m_mainLayout = new CommonPrintDialogMainLayout(this, m_backend, parent);
