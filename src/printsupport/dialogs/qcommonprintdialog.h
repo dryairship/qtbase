@@ -3,6 +3,9 @@
 
 #include <memory>
 #include <QtWidgets/QtWidgets>
+#include <QtPrintSupport/private/qtprintsupportglobal_p.h>
+
+QT_REQUIRE_CONFIG(cpdb);
 
 QT_BEGIN_NAMESPACE
 
