@@ -94,7 +94,11 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(reverseCheckBoxStateChanged(int))
     );
 
-    connectComboBoxSignal(m_pageSetupTab->m_paperSizeComboBox);
+    QObject::connect(
+        m_pageSetupTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(paperSizeComboBoxValueChanged(QString))
+    );
+
     connectComboBoxSignal(m_pageSetupTab->m_orientationComboBox);
     connectComboBoxSignal(m_optionsTab->m_colorModeComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_bothSidesComboBox);
@@ -149,10 +153,12 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     usedKeys.insert(tr("multiple-document-handling")); // will be a check box
     usedKeys.insert(tr("page-delivery")); // will be a check box
 
+    options[QString::fromUtf8("media")] = CpdbUtils::convertPaperSizesToReadable(options[QString::fromUtf8("media")]);
+
     updateComboBox(m_pageSetupTab->m_bothSidesComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_scaleComboBox, options, &usedKeys);
-    //updateComboBox(m_pageSetupTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(QString::fromUtf8("media")), options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_paperSizeComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_orientationComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_outputBinComboBox, options, &usedKeys);
     updateComboBox(m_optionsTab->m_resolutionComboBox, options, &usedKeys);
@@ -177,6 +183,14 @@ void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
 {
     QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
     qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
+    m_backend->setSelectableOption(optionName, currentText);
+}
+
+void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
+{
+    QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
+    qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
+    QString pwgSize = CpdbUtils::convertReadablePaperSizeToPWG(currentText);
     m_backend->setSelectableOption(optionName, currentText);
 }
 

@@ -146,6 +146,7 @@ private Q_SLOTS:
     void collateCheckBoxStateChanged(int state);
     void reverseCheckBoxStateChanged(int state);
     void comboBoxValueChanged(QString currentText);
+    void paperSizeComboBoxValueChanged(QString currentText);
 
 public:
     explicit CommonPrintDialogMainLayout(QCommonPrintDialog *commonPrintDialog,
