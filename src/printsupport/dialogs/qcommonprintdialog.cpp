@@ -13,7 +13,7 @@ QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
     auto id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1();
     m_backend = std::make_shared<CommonPrintDialogBackend>(id.data());
 
-    resize(500, 480);
+    resize(640, 480);
     m_mainLayout = new CommonPrintDialogMainLayout(this, m_backend, parent);
     setLayout(m_mainLayout);
 }
@@ -265,9 +265,12 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     rangeGroupBoxLayout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
     rangeGroupBox->setLayout(rangeGroupBoxLayout);
 
+    QHBoxLayout *bottomLayout = new QHBoxLayout;
+    bottomLayout->addWidget(rangeGroupBox);
+    bottomLayout->addWidget(copiesGroupBox);
+
     layout->addRow(printerGroupBox);
-    layout->addRow(rangeGroupBox);
-    layout->addRow(copiesGroupBox);
+    layout->addRow(bottomLayout);
 
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
@@ -298,7 +301,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     m_orientationComboBox = new QComboBox;
     m_outputBinComboBox = new QComboBox;
 
-    QFormLayout *layout = new QFormLayout;
+    QGridLayout *layout = new QGridLayout;
 
     QGroupBox *layoutGroupBox = new QGroupBox(tr("Layout"));
     QFormLayout *layoutGroupBoxLayout = new QFormLayout;
@@ -315,8 +318,8 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     paperGroupBoxLayout->addRow(new QLabel(tr("Orientation")), m_orientationComboBox);
     paperGroupBox->setLayout(paperGroupBoxLayout);
 
-    layout->addRow(layoutGroupBox);
-    layout->addRow(paperGroupBox);
+    layout->addWidget(layoutGroupBox, 0, 0);
+    layout->addWidget(paperGroupBox, 0, 1);
     setLayout(layout);
 
     m_bothSidesComboBox->setProperty("cpdbOptionName", QString::fromUtf8("sides"));
