@@ -27,6 +27,13 @@
     },
 
     "features": {
+        "cpdb": {
+            "label": "CPDB",
+            "purpose": "Provides support for the Common Printing Dialog.",
+            "section": "Widget",
+            "condition": "libs.cups && features.printer && features.datestring",
+            "output": [ "privateFeature", "feature" ]
+        },
         "cups": {
             "label": "CUPS",
             "purpose": "Provides support for the Common Unix Printing System.",
