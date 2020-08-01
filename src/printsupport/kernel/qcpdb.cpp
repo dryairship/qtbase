@@ -90,7 +90,7 @@ QStringList CpdbUtils::convertOptionToQStringList(Option* option)
         if(strcmp(option->supported_values[i], option->default_value) != 0)
             qsl.append(QString::fromUtf8(option->supported_values[i]));
     }
-    if(strcmp(option->default_value, "") != 0)
+    if(strcmp(option->default_value, "") != 0 && strcmp(option->default_value, "NA") != 0 )
         qsl.prepend(QString::fromUtf8(option->default_value));
     return qsl;
 }
@@ -203,97 +203,7 @@ void CommonPrintDialogBackend::setReversePageOrder(bool reverse)
     );
 }
 
-void CommonPrintDialogBackend::setPaperSize(QString paperSize)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("media"),
-        paperSize.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setOrientation(QString orientation)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("orientation-requested"),
-        orientation.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setColorMode(QString colorMode)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("print-color-mode"),
-        colorMode.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setPrintBothSidesOption(QString bothSidesOption)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("sides"),
-        bothSidesOption.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setPagesPerSide(QString pagesPerSide)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("number-up"),
-        pagesPerSide.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setScale(QString scale)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("print-scaling"),
-        scale.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setResolution(QString resolution)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("printer-resolutions"),
-        resolution.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setQuality(QString quality)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("print-quality"),
-        quality.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setOutputBin(QString outputBin)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("output-bin"),
-        outputBin.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setFinishings(QString finishings)
-{
-    add_setting_to_printer(
-        m_printerObj,
-        const_cast<char*>("finishings"),
-        finishings.toLatin1().data()
-    );
-}
-
-void CommonPrintDialogBackend::setExtraOption(QString optionName, QString optionValue)
+void CommonPrintDialogBackend::setSelectableOption(QString optionName, QString optionValue)
 {
     add_setting_to_printer(
         m_printerObj,

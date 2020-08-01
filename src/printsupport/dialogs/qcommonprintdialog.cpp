@@ -94,54 +94,23 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(reverseCheckBoxStateChanged(int))
     );
 
-    QObject::connect(
-        m_pageSetupTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(paperSizeComboBoxValueChanged(QString))
-    );
+    connectComboBoxSignal(m_pageSetupTab->m_paperSizeComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_orientationComboBox);
+    connectComboBoxSignal(m_optionsTab->m_colorModeComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_bothSidesComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_pagesPerSideComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_scaleComboBox);
+    connectComboBoxSignal(m_optionsTab->m_resolutionComboBox);
+    connectComboBoxSignal(m_optionsTab->m_qualityComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_outputBinComboBox);
+    connectComboBoxSignal(m_optionsTab->m_finishingsComboBox);
+}
 
+void CommonPrintDialogMainLayout::connectComboBoxSignal(QComboBox* comboBox)
+{
     QObject::connect(
-        m_pageSetupTab->m_orientationComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(orientationComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_optionsTab->m_colorModeComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(colorModeComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_pageSetupTab->m_bothSidesComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(bothSidesComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_pageSetupTab->m_pagesPerSideComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(pagesPerSideComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_pageSetupTab->m_scaleComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(scaleComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_optionsTab->m_resolutionComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(resolutionComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_optionsTab->m_qualityComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(qualityComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_pageSetupTab->m_outputBinComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(outputBinComboBoxValueChanged(QString))
-    );
-
-    QObject::connect(
-        m_optionsTab->m_finishingsComboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(finishingsComboBoxValueChanged(QString))
+        comboBox, SIGNAL(currentTextChanged(QString)),
+        this, SLOT(comboBoxValueChanged(QString))
     );
 }
 
@@ -180,44 +149,35 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     usedKeys.insert(tr("multiple-document-handling")); // will be a check box
     usedKeys.insert(tr("page-delivery")); // will be a check box
 
-    populateComboBox(m_pageSetupTab->m_bothSidesComboBox, options[tr("sides")]);
-    usedKeys.insert(tr("sides"));
-    populateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options[tr("number-up")]);
-    usedKeys.insert(tr("number-up"));
-    populateComboBox(m_pageSetupTab->m_scaleComboBox, options[tr("print-scaling")]);
-    usedKeys.insert(tr("print-scaling"));
-    populateComboBox(m_pageSetupTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(options[tr("media")]));
-    usedKeys.insert(tr("media"));
-    populateComboBox(m_pageSetupTab->m_orientationComboBox, options[tr("orientation-requested")]);
-    usedKeys.insert(tr("orientation-requested"));
-    populateComboBox(m_pageSetupTab->m_outputBinComboBox, options[tr("output-bin")]);
-    usedKeys.insert(tr("output-bin"));
-
-    populateComboBox(m_optionsTab->m_resolutionComboBox, options[tr("printer-resolution")]);
-    usedKeys.insert(tr("printer-resolution"));
-    populateComboBox(m_optionsTab->m_qualityComboBox, options[tr("print-quality")]);
-    usedKeys.insert(tr("print-quality"));
-    populateComboBox(m_optionsTab->m_colorModeComboBox, options[tr("print-color-mode")]);
-    usedKeys.insert(tr("print-color-mode"));
-    populateComboBox(m_optionsTab->m_finishingsComboBox, options[tr("finishings")]);
-    usedKeys.insert(tr("finishings"));
-
-    populateComboBox(m_jobsTab->m_startJobComboBox, options[tr("job-hold-until")]);
-    usedKeys.insert(tr("job-hold-until"));
-    populateComboBox(m_jobsTab->m_jobNameComboBox, options[tr("job-name")]);
-    usedKeys.insert(tr("job-name"));
-    populateComboBox(m_jobsTab->m_jobPriorityComboBox, options[tr("job-priority")]);
-    usedKeys.insert(tr("job-priority"));
-    populateComboBox(m_jobsTab->m_jobSheetsComboBox, options[tr("job-sheets")]);
-    usedKeys.insert(tr("job-sheets"));
+    updateComboBox(m_pageSetupTab->m_bothSidesComboBox, options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_scaleComboBox, options, &usedKeys);
+    //updateComboBox(m_pageSetupTab->m_paperSizeComboBox, CpdbUtils::convertPaperSizesToReadable(QString::fromUtf8("media")), options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_orientationComboBox, options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_outputBinComboBox, options, &usedKeys);
+    updateComboBox(m_optionsTab->m_resolutionComboBox, options, &usedKeys);
+    updateComboBox(m_optionsTab->m_qualityComboBox, options, &usedKeys);
+    updateComboBox(m_optionsTab->m_colorModeComboBox, options, &usedKeys);
+    updateComboBox(m_optionsTab->m_finishingsComboBox, options, &usedKeys);
+    updateComboBox(m_jobsTab->m_startJobComboBox, options, &usedKeys);
+    updateComboBox(m_jobsTab->m_jobNameComboBox, options, &usedKeys);
+    updateComboBox(m_jobsTab->m_jobPriorityComboBox, options, &usedKeys);
+    updateComboBox(m_jobsTab->m_jobSheetsComboBox, options, &usedKeys);
 
     m_extraOptionsTab->deleteAllComboBoxes();
     for (auto it = options.begin(); it != options.end(); it++) {
         if(usedKeys.contains(it.key()))
             continue;
         QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(it.key());
-        populateComboBox(newComboBox, it.value());
+        updateComboBox(newComboBox, options, &usedKeys);
     }
+}
+
+void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
+{
+    QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
+    qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
+    m_backend->setSelectableOption(optionName, currentText);
 }
 
 void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
@@ -244,71 +204,14 @@ void CommonPrintDialogMainLayout::reverseCheckBoxStateChanged(int state)
     m_backend->setReversePageOrder(state == Qt::Checked);
 }
 
-void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
+void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys)
 {
-    qDebug("qCPD: paperSizeChanged: %s", currentText.toLatin1().data());
-    m_backend->setPaperSize(CpdbUtils::convertReadablePaperSizeToPWG(currentText));
-}
-
-void CommonPrintDialogMainLayout::orientationComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: orientationChanged: %s", currentText.toLatin1().data());
-    m_backend->setOrientation(currentText);
-}
-
-void CommonPrintDialogMainLayout::colorModeComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: colorModeChanged: %s", currentText.toLatin1().data());
-    m_backend->setColorMode(currentText);
-}
-
-void CommonPrintDialogMainLayout::bothSidesComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: bothSidesOptionChanged: %s", currentText.toLatin1().data());
-    m_backend->setPrintBothSidesOption(currentText);
-}
-
-void CommonPrintDialogMainLayout::pagesPerSideComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: pagesPerSideChanged: %s", currentText.toLatin1().data());
-    m_backend->setPagesPerSide(currentText);
-}
-
-void CommonPrintDialogMainLayout::scaleComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: scaleChanged: %s", currentText.toLatin1().data());
-    m_backend->setScale(currentText);
-}
-
-void CommonPrintDialogMainLayout::resolutionComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: resolutionChanged: %s", currentText.toLatin1().data());
-    m_backend->setResolution(currentText);
-}
-
-void CommonPrintDialogMainLayout::qualityComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: qualityChanged: %s", currentText.toLatin1().data());
-    m_backend->setQuality(currentText);
-}
-
-void CommonPrintDialogMainLayout::outputBinComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: outputBinChanged: %s", currentText.toLatin1().data());
-    m_backend->setOutputBin(currentText);
-}
-
-void CommonPrintDialogMainLayout::finishingsComboBoxValueChanged(QString currentText)
-{
-    qDebug("qCPD: finishingsChanged: %s", currentText.toLatin1().data());
-    m_backend->setFinishings(currentText);
-}
-
-void CommonPrintDialogMainLayout::populateComboBox(QComboBox *comboBox, QStringList values)
-{
+    QString optionName = qvariant_cast<QString>(comboBox->property("cpdbOptionName"));
     comboBox->clear();
-    comboBox->addItems(values);
+    if(options.contains(optionName))
+        comboBox->addItems(options[optionName]);
     comboBox->setEnabled(comboBox->count() != 0);
+    usedKeys->insert(optionName);
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
@@ -398,6 +301,13 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     layout->addRow(paperGroupBox);
     setLayout(layout);
 
+    m_bothSidesComboBox->setProperty("cpdbOptionName", QString::fromUtf8("sides"));
+    m_pagesPerSideComboBox->setProperty("cpdbOptionName", QString::fromUtf8("number-up"));
+    m_scaleComboBox->setProperty("cpdbOptionName", QString::fromUtf8("print-scaling"));
+    m_paperSizeComboBox->setProperty("cpdbOptionName", QString::fromUtf8("media"));
+    m_orientationComboBox->setProperty("cpdbOptionName", QString::fromUtf8("orientation-requested"));
+    m_outputBinComboBox->setProperty("cpdbOptionName", QString::fromUtf8("output-bin"));
+
     (void)parent;
 }
 
@@ -429,6 +339,11 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_layout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
 
     setLayout(m_layout);
+
+    m_resolutionComboBox->setProperty("cpdbOptionName", QString::fromUtf8("printer-resolution"));
+    m_qualityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("print-quality"));
+    m_colorModeComboBox->setProperty("cpdbOptionName", QString::fromUtf8("print-color-mode"));
+    m_finishingsComboBox->setProperty("cpdbOptionName", QString::fromUtf8("finishings"));
 
     (void)parent;
 }
@@ -469,6 +384,11 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
 
     setLayout(layout);
 
+    m_startJobComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-hold-until"));
+    m_jobNameComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-name"));
+    m_jobPriorityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-priority"));
+    m_jobSheetsComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-sheets"));
+
     (void)parent;
 }
 
@@ -507,7 +427,7 @@ void CommonPrintDialogExtraOptionsTab::extraOptionsComboBoxValueChanged(QString 
 {
     QString optionName = qvariant_cast<QString>(sender()->property("optionName"));
     qDebug("qCPD: extraOptionChanged: %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
-    m_backend->setExtraOption(optionName, currentText);
+    m_backend->setSelectableOption(optionName, currentText);
 }
 
 QT_END_NAMESPACE

@@ -135,7 +135,8 @@ private:
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
     void connectSignalsAndSlots();
-    void populateComboBox(QComboBox *comboBox, QStringList sizes);
+    void connectComboBoxSignal(QComboBox* comboBox);
+    void updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys);
 
 private Q_SLOTS:
     void printerListChanged();
@@ -144,16 +145,7 @@ private Q_SLOTS:
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);
     void reverseCheckBoxStateChanged(int state);
-    void paperSizeComboBoxValueChanged(QString currentText);
-    void orientationComboBoxValueChanged(QString currentText);
-    void colorModeComboBoxValueChanged(QString currentText);
-    void bothSidesComboBoxValueChanged(QString currentText);
-    void pagesPerSideComboBoxValueChanged(QString currentText);
-    void scaleComboBoxValueChanged(QString currentText);
-    void resolutionComboBoxValueChanged(QString currentText);
-    void qualityComboBoxValueChanged(QString currentText);
-    void outputBinComboBoxValueChanged(QString currentText);
-    void finishingsComboBoxValueChanged(QString currentText);
+    void comboBoxValueChanged(QString currentText);
 
 public:
     explicit CommonPrintDialogMainLayout(QCommonPrintDialog *commonPrintDialog,

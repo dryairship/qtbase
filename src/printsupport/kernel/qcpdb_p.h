@@ -84,17 +84,7 @@ public:
     void setRemotePrintersVisible(bool visible);
     void setCollateEnabled(bool enabled);
     void setReversePageOrder(bool reverse);
-    void setPaperSize(QString paperSize);
-    void setOrientation(QString orientation);
-    void setColorMode(QString colorMode);
-    void setPrintBothSidesOption(QString colorMode);
-    void setPagesPerSide(QString pagesPerSide);
-    void setScale(QString scale);
-    void setResolution(QString resolution);
-    void setQuality(QString quality);
-    void setOutputBin(QString outputBin);
-    void setFinishings(QString finishings);
-    void setExtraOption(QString optionName, QString optionValue);
+    void setSelectableOption(QString optionName, QString optionValue);
 
 private:
     FrontendObj *m_frontendObj;
