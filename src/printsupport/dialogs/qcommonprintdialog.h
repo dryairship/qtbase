@@ -110,9 +110,6 @@ private:
     QComboBox *addNewComboBox(QString name);
     void deleteAllComboBoxes();
 
-private Q_SLOTS:
-    void extraOptionsComboBoxValueChanged(QString currentText);
-
     friend class CommonPrintDialogMainLayout;
 };
 

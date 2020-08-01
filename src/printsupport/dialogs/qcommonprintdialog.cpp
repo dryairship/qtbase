@@ -175,6 +175,10 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         if(usedKeys.contains(it.key()))
             continue;
         QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(it.key());
+        QObject::connect(
+            newComboBox, SIGNAL(currentTextChanged(QString)),
+            this, SLOT(comboBoxValueChanged(QString))
+        );
         updateComboBox(newComboBox, options, &usedKeys);
     }
 }
@@ -419,14 +423,8 @@ CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
 QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
 {
     QComboBox *comboBox = new QComboBox;
-    comboBox->setProperty("optionName", name);
+    comboBox->setProperty("cpdbOptionName", name);
     m_layout->addRow(new QLabel(name), comboBox);
-
-    QObject::connect(
-        comboBox, SIGNAL(currentTextChanged(QString)),
-        this, SLOT(extraOptionsComboBoxValueChanged(QString))
-    );
-
     return comboBox;
 }
 
@@ -435,13 +433,6 @@ void CommonPrintDialogExtraOptionsTab::deleteAllComboBoxes()
     int rowCount = m_layout->rowCount();
     for(int i=rowCount-1; i>=0; i--)
         m_layout->removeRow(i);
-}
-
-void CommonPrintDialogExtraOptionsTab::extraOptionsComboBoxValueChanged(QString currentText)
-{
-    QString optionName = qvariant_cast<QString>(sender()->property("optionName"));
-    qDebug("qCPD: extraOptionChanged: %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
-    m_backend->setSelectableOption(optionName, currentText);
 }
 
 QT_END_NAMESPACE
