@@ -211,3 +211,13 @@ void CommonPrintDialogBackend::setSelectableOption(QString optionName, QString o
         optionValue.toLatin1().data()
     );
 }
+
+void CommonPrintDialogBackend::setPageRange(QVariant range)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("page-ranges"),
+        range.isNull() ? NULL
+                       : range.value<QString>().toLatin1().data()
+    );
+}

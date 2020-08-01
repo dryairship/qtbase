@@ -99,6 +99,16 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(paperSizeComboBoxValueChanged(QString))
     );
 
+    QObject::connect(
+        m_generalTab->m_customRangeLineEdit, SIGNAL(textChanged(QString)),
+        this, SLOT(customRangeLineEditTextChanged(QString))
+    );
+
+    connectRangeRadioButtonSignal(m_generalTab->m_rangeAllRadioButton);
+    connectRangeRadioButtonSignal(m_generalTab->m_rangeCurrentPageRadioButton);
+    connectRangeRadioButtonSignal(m_generalTab->m_rangeSelectionRadioButton);
+    connectRangeRadioButtonSignal(m_generalTab->m_rangeCustomRangeRadioButton);
+
     connectComboBoxSignal(m_pageSetupTab->m_orientationComboBox);
     connectComboBoxSignal(m_optionsTab->m_colorModeComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_bothSidesComboBox);
@@ -115,6 +125,14 @@ void CommonPrintDialogMainLayout::connectComboBoxSignal(QComboBox* comboBox)
     QObject::connect(
         comboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(comboBoxValueChanged(QString))
+    );
+}
+
+void CommonPrintDialogMainLayout::connectRangeRadioButtonSignal(QRadioButton* radioButton)
+{
+    QObject::connect(
+        radioButton, SIGNAL(toggled(bool)),
+        this, SLOT(rangeRadioButtonChanged(bool))
     );
 }
 
@@ -149,9 +167,10 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     }
 
     QSet<QString> usedKeys;
-    usedKeys.insert(tr("copies")); // will be an integer in a spin box
-    usedKeys.insert(tr("multiple-document-handling")); // will be a check box
-    usedKeys.insert(tr("page-delivery")); // will be a check box
+    usedKeys.insert(QString::fromUtf8("copies")); // will be an integer in a spin box
+    usedKeys.insert(QString::fromUtf8("multiple-document-handling")); // will be a check box
+    usedKeys.insert(QString::fromUtf8("page-delivery")); // will be a check box
+    usedKeys.insert(QString::fromUtf8("page-ranges")); // will be a radio button group
 
     options[QString::fromUtf8("media")] = CpdbUtils::convertPaperSizesToReadable(options[QString::fromUtf8("media")]);
 
@@ -204,6 +223,32 @@ void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
     m_backend->setRemotePrintersVisible(state == Qt::Checked);
 }
 
+void CommonPrintDialogMainLayout::rangeRadioButtonChanged(bool checked)
+{
+    if(!checked)
+        return;
+
+    QRadioButton *radioButton = static_cast<QRadioButton *>(sender());
+    QString radioButtonText = radioButton->text();
+
+    if(radioButtonText == tr("All")) {
+        qDebug("qCPD: rangeRadioButton: All");
+        m_backend->setPageRange(QString());
+        m_generalTab->m_customRangeLineEdit->setEnabled(false);
+    } else if(radioButtonText == tr("Pages: ")) {
+        QString range = m_generalTab->m_customRangeLineEdit->text();
+        qDebug("qCPD: rangeRadioButton: Pages: %s", range.toLatin1().data());
+        m_backend->setPageRange(range);
+        m_generalTab->m_customRangeLineEdit->setEnabled(true);
+    }
+}
+
+void CommonPrintDialogMainLayout::customRangeLineEditTextChanged(QString currentText)
+{
+    qDebug("qCPD: rangeRadioButton: Pages: %s", currentText.toLatin1().data());
+    m_backend->setPageRange(currentText);
+}
+
 void CommonPrintDialogMainLayout::copiesSpinBoxValueChanged(int value)
 {
     qDebug("qCPD: copiesValueChanged: %d", value);
@@ -238,12 +283,14 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 {
     m_destinationWidget = new QTableWidget(0, 5, this);
     m_remotePrintersCheckBox = new QCheckBox;
-    m_pagesComboBox = new QComboBox;
     m_copiesSpinBox = new QSpinBox;
     m_collateCheckBox = new QCheckBox;
     m_reverseCheckBox = new QCheckBox;
-
-    m_pagesComboBox->addItem(tr("All"));
+    m_rangeAllRadioButton = new QRadioButton(tr("All"));
+    m_rangeCurrentPageRadioButton = new QRadioButton(tr("Current Page"));
+    m_rangeSelectionRadioButton = new QRadioButton(tr("Selection"));
+    m_rangeCustomRangeRadioButton = new QRadioButton(tr("Pages: "));
+    m_customRangeLineEdit = new QLineEdit;
 
     QFormLayout *layout = new QFormLayout;
 
@@ -262,12 +309,17 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 
     QGroupBox *rangeGroupBox = new QGroupBox(tr("Range"));
     QFormLayout *rangeGroupBoxLayout = new QFormLayout;
-    rangeGroupBoxLayout->addRow(new QLabel(tr("Pages")), m_pagesComboBox);
+    rangeGroupBoxLayout->addRow(m_rangeAllRadioButton);
+    rangeGroupBoxLayout->addRow(m_rangeCurrentPageRadioButton);
+    rangeGroupBoxLayout->addRow(m_rangeSelectionRadioButton);
+    rangeGroupBoxLayout->addRow(m_rangeCustomRangeRadioButton, m_customRangeLineEdit);
     rangeGroupBox->setLayout(rangeGroupBoxLayout);
 
     QHBoxLayout *bottomLayout = new QHBoxLayout;
     bottomLayout->addWidget(rangeGroupBox);
     bottomLayout->addWidget(copiesGroupBox);
+    bottomLayout->setStretch(0,1);
+    bottomLayout->setStretch(1,1);
 
     layout->addRow(printerGroupBox);
     layout->addRow(bottomLayout);
@@ -275,6 +327,9 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
     m_collateCheckBox->setEnabled(false);
+    m_rangeCurrentPageRadioButton->setEnabled(false);
+    m_rangeSelectionRadioButton->setEnabled(false);
+    m_customRangeLineEdit->setEnabled(false);
 
     QStringList destinationWidgetHeaders = {tr("Printer"), tr("Location"), tr("State")};
     m_destinationWidget->setHorizontalHeaderLabels(destinationWidgetHeaders);

@@ -20,10 +20,14 @@ class CommonPrintDialogGeneralTab : public QWidget
 private:
     QTableWidget *m_destinationWidget;
     QCheckBox *m_remotePrintersCheckBox;
-    QComboBox *m_pagesComboBox;
     QSpinBox *m_copiesSpinBox;
     QCheckBox *m_collateCheckBox;
     QCheckBox *m_reverseCheckBox;
+    QRadioButton *m_rangeAllRadioButton;
+    QRadioButton *m_rangeCurrentPageRadioButton;
+    QRadioButton *m_rangeSelectionRadioButton;
+    QRadioButton *m_rangeCustomRangeRadioButton;
+    QLineEdit *m_customRangeLineEdit;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
@@ -133,12 +137,15 @@ private:
 
     void connectSignalsAndSlots();
     void connectComboBoxSignal(QComboBox* comboBox);
+    void connectRangeRadioButtonSignal(QRadioButton* radioButton);
     void updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys);
 
 private Q_SLOTS:
     void printerListChanged();
     void newPrinterSelected(int row);
     void remotePrintersCheckBoxStateChanged(int state);
+    void customRangeLineEditTextChanged(QString currentText);
+    void rangeRadioButtonChanged(bool checked);
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);
     void reverseCheckBoxStateChanged(int state);
