@@ -33,7 +33,7 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     m_tabWidget->addTab(m_generalTab, tr("General"));
     m_tabWidget->addTab(m_pageSetupTab, tr("Page Setup"));
     m_tabWidget->addTab(m_optionsTab, tr("Options"));
-    m_tabWidget->addTab(m_jobsTab, tr("Jobs"));
+    m_tabWidget->addTab(m_jobsTab, tr("Job"));
     m_tabWidget->addTab(m_extraOptionsTab, tr("Extra Options"));
 
     m_printButton = new QPushButton(tr("Print"));
@@ -104,10 +104,19 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(customRangeLineEditTextChanged(QString))
     );
 
+    QObject::connect(
+        m_jobsTab->m_jobNameLineEdit, SIGNAL(textChanged(QString)),
+        this, SLOT(lineEditTextChanged(QString))
+    );
+
     connectRangeRadioButtonSignal(m_generalTab->m_rangeAllRadioButton);
     connectRangeRadioButtonSignal(m_generalTab->m_rangeCurrentPageRadioButton);
     connectRangeRadioButtonSignal(m_generalTab->m_rangeSelectionRadioButton);
     connectRangeRadioButtonSignal(m_generalTab->m_rangeCustomRangeRadioButton);
+
+    connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobNowRadioButton);
+    connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobAtRadioButton);
+    connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobOnHoldRadioButton);
 
     connectComboBoxSignal(m_pageSetupTab->m_orientationComboBox);
     connectComboBoxSignal(m_optionsTab->m_colorModeComboBox);
@@ -115,9 +124,12 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     connectComboBoxSignal(m_pageSetupTab->m_pagesPerSideComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_scaleComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_onlyPrintComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_outputBinComboBox);
     connectComboBoxSignal(m_optionsTab->m_resolutionComboBox);
     connectComboBoxSignal(m_optionsTab->m_qualityComboBox);
-    connectComboBoxSignal(m_pageSetupTab->m_outputBinComboBox);
+    connectComboBoxSignal(m_jobsTab->m_startJobAtComboBox);
+    connectComboBoxSignal(m_jobsTab->m_jobPriorityComboBox);
+    connectComboBoxSignal(m_jobsTab->m_jobSheetsComboBox);
     connectComboBoxSignal(m_optionsTab->m_finishingsComboBox);
 }
 
@@ -134,6 +146,14 @@ void CommonPrintDialogMainLayout::connectRangeRadioButtonSignal(QRadioButton* ra
     QObject::connect(
         radioButton, SIGNAL(toggled(bool)),
         this, SLOT(rangeRadioButtonChanged(bool))
+    );
+}
+
+void CommonPrintDialogMainLayout::connectStartJobAtRadioButtonSignal(QRadioButton* radioButton)
+{
+    QObject::connect(
+        radioButton, SIGNAL(toggled(bool)),
+        this, SLOT(startJobAtRadioButtonChanged(bool))
     );
 }
 
@@ -172,8 +192,11 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     usedKeys.insert(QString::fromUtf8("multiple-document-handling")); // will be a check box
     usedKeys.insert(QString::fromUtf8("page-delivery")); // will be a check box
     usedKeys.insert(QString::fromUtf8("page-ranges")); // will be a radio button group
+    usedKeys.insert(QString::fromUtf8("job-name")); // will be a line edit box
 
     options[QString::fromUtf8("media")] = CpdbUtils::convertPaperSizesToReadable(options[QString::fromUtf8("media")]);
+    options[QString::fromUtf8("job-hold-until")].removeOne(QString::fromUtf8("no-hold"));
+    options[QString::fromUtf8("job-hold-until")].removeOne(QString::fromUtf8("indefinite"));
 
     updateComboBox(m_pageSetupTab->m_bothSidesComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options, &usedKeys);
@@ -186,8 +209,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     updateComboBox(m_optionsTab->m_qualityComboBox, options, &usedKeys);
     updateComboBox(m_optionsTab->m_colorModeComboBox, options, &usedKeys);
     updateComboBox(m_optionsTab->m_finishingsComboBox, options, &usedKeys);
-    updateComboBox(m_jobsTab->m_startJobComboBox, options, &usedKeys);
-    updateComboBox(m_jobsTab->m_jobNameComboBox, options, &usedKeys);
+    updateComboBox(m_jobsTab->m_startJobAtComboBox, options, &usedKeys);
     updateComboBox(m_jobsTab->m_jobPriorityComboBox, options, &usedKeys);
     updateComboBox(m_jobsTab->m_jobSheetsComboBox, options, &usedKeys);
 
@@ -205,6 +227,13 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
 }
 
 void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
+{
+    QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
+    qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
+    m_backend->setSelectableOption(optionName, currentText);
+}
+
+void CommonPrintDialogMainLayout::lineEditTextChanged(QString currentText)
 {
     QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
     qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
@@ -242,6 +271,31 @@ void CommonPrintDialogMainLayout::rangeRadioButtonChanged(bool checked)
         qDebug("qCPD: rangeRadioButton: Pages: %s", range.toLatin1().data());
         m_backend->setPageRange(range);
         m_generalTab->m_customRangeLineEdit->setEnabled(true);
+    }
+}
+
+void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
+{
+    if(!checked)
+        return;
+
+    QRadioButton *radioButton = static_cast<QRadioButton *>(sender());
+    QString radioButtonText = radioButton->text();
+    QString optionName = qvariant_cast<QString>(m_jobsTab->m_startJobAtComboBox->property("cpdbOptionName"));
+
+    if(radioButtonText == tr("Now")) {
+        qDebug("qCPD | startJobAt: Now");
+        m_backend->setSelectableOption(optionName, QString::fromUtf8("no-hold"));
+        m_jobsTab->m_startJobAtComboBox->setEnabled(false);
+    } else if(radioButtonText == tr("On Hold")) {
+        qDebug("qCPD | startJobAt: Oh Hold");
+        m_backend->setSelectableOption(optionName, QString::fromUtf8("indefinite"));
+        m_jobsTab->m_startJobAtComboBox->setEnabled(false);
+    } else if(radioButtonText == tr("At: ")) {
+        QString startJobTime = m_jobsTab->m_startJobAtComboBox->currentText();
+        qDebug("qCPD | startJobAt: At %s", startJobTime.toLatin1().data());
+        m_backend->setSelectableOption(optionName, startJobTime);
+        m_jobsTab->m_startJobAtComboBox->setEnabled(true);
     }
 }
 
@@ -433,40 +487,33 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
-    QWidget *jobsWidget = new QWidget;
-    m_jobsLayout = new QGridLayout;
-
-    m_jobsLayout->addWidget(new QLabel(tr("Printer")), 0, 0);
-    m_jobsLayout->addWidget(new QLabel(tr("Location")), 0, 1);
-    m_jobsLayout->addWidget(new QLabel(tr("Status")), 0, 2);
-
-    jobsWidget->setLayout(m_jobsLayout);
-
-    m_scrollArea = new QScrollArea;
-    m_scrollArea->setMinimumHeight(240);
-    m_scrollArea->setWidget(jobsWidget);
-    m_scrollArea->setWidgetResizable(true);
-
-    m_refreshButton = new QPushButton(tr("Refresh"));
-    m_startJobComboBox = new QComboBox;
-    m_saveJobButton = new QPushButton(tr("Save"));
-    m_jobNameComboBox = new QComboBox;
+    m_startJobAtComboBox = new QComboBox;
+    m_jobNameLineEdit = new QLineEdit;
     m_jobPriorityComboBox = new QComboBox;
     m_jobSheetsComboBox = new QComboBox;
+    m_startJobAtRadioButton = new QRadioButton(tr("At: "));
+    m_startJobNowRadioButton = new QRadioButton(tr("Now"));
+    m_startJobOnHoldRadioButton = new QRadioButton(tr("On Hold"));
+
+    QGroupBox *startJobGroupBox = new QGroupBox(tr("Start Job"));
+    QFormLayout *startJobGroupBoxLayout = new QFormLayout;
+    startJobGroupBoxLayout->addRow(m_startJobNowRadioButton);
+    startJobGroupBoxLayout->addRow(m_startJobAtRadioButton, m_startJobAtComboBox);
+    startJobGroupBoxLayout->addRow(m_startJobOnHoldRadioButton);
+    startJobGroupBox->setLayout(startJobGroupBoxLayout);
 
     QFormLayout *layout = new QFormLayout;
-    layout->addRow(m_scrollArea);
-    layout->addRow(new QLabel(tr("Refresh")), m_refreshButton);
-    layout->addRow(new QLabel(tr("Start Job")), m_startJobComboBox);
-    layout->addRow(new QLabel(tr("Save Job")), m_saveJobButton);
-    layout->addRow(new QLabel(tr("Job Name")), m_jobNameComboBox);
+    layout->addRow(new QLabel(tr("Job Name")), m_jobNameLineEdit);
     layout->addRow(new QLabel(tr("Job Priority")), m_jobPriorityComboBox);
     layout->addRow(new QLabel(tr("Job Sheets")), m_jobSheetsComboBox);
+    layout->addRow(startJobGroupBox);
 
     setLayout(layout);
 
-    m_startJobComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-hold-until"));
-    m_jobNameComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-name"));
+    m_startJobAtComboBox->setEnabled(false);
+
+    m_startJobAtComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-hold-until"));
+    m_jobNameLineEdit->setProperty("cpdbOptionName", QString::fromUtf8("job-name"));
     m_jobPriorityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-priority"));
     m_jobSheetsComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-sheets"));
 

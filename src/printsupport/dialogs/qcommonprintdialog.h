@@ -86,14 +86,13 @@ class CommonPrintDialogJobsTab : public QWidget
     Q_OBJECT
 
 private:
-    QPushButton *m_refreshButton;
-    QComboBox *m_startJobComboBox;
-    QPushButton *m_saveJobButton;
+    QComboBox *m_startJobAtComboBox;
     QComboBox *m_jobPriorityComboBox;
     QComboBox *m_jobSheetsComboBox;
-    QComboBox *m_jobNameComboBox;
-    QGridLayout *m_jobsLayout;
-    QScrollArea *m_scrollArea;
+    QLineEdit *m_jobNameLineEdit;
+    QRadioButton *m_startJobNowRadioButton;
+    QRadioButton *m_startJobAtRadioButton;
+    QRadioButton *m_startJobOnHoldRadioButton;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
@@ -139,6 +138,7 @@ private:
     void connectSignalsAndSlots();
     void connectComboBoxSignal(QComboBox* comboBox);
     void connectRangeRadioButtonSignal(QRadioButton* radioButton);
+    void connectStartJobAtRadioButtonSignal(QRadioButton* radioButton);
     void updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys);
 
 private Q_SLOTS:
@@ -146,7 +146,9 @@ private Q_SLOTS:
     void newPrinterSelected(int row);
     void remotePrintersCheckBoxStateChanged(int state);
     void customRangeLineEditTextChanged(QString currentText);
+    void lineEditTextChanged(QString currentText);
     void rangeRadioButtonChanged(bool checked);
+    void startJobAtRadioButtonChanged(bool checked);
     void copiesSpinBoxValueChanged(int value);
     void collateCheckBoxStateChanged(int state);
     void reverseCheckBoxStateChanged(int state);
