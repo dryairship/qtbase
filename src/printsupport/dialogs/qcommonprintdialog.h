@@ -49,6 +49,7 @@ private:
     QComboBox *m_paperSourceComboBox;
     QComboBox *m_pageRangeComboBox;
     QComboBox *m_outputBinComboBox;
+    QComboBox *m_onlyPrintComboBox;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 

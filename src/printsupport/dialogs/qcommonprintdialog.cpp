@@ -114,6 +114,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     connectComboBoxSignal(m_pageSetupTab->m_bothSidesComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_pagesPerSideComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_scaleComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_onlyPrintComboBox);
     connectComboBoxSignal(m_optionsTab->m_resolutionComboBox);
     connectComboBoxSignal(m_optionsTab->m_qualityComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_outputBinComboBox);
@@ -176,6 +177,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
 
     updateComboBox(m_pageSetupTab->m_bothSidesComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_onlyPrintComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_scaleComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_paperSizeComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_orientationComboBox, options, &usedKeys);
@@ -355,6 +357,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     m_paperSizeComboBox = new QComboBox;
     m_orientationComboBox = new QComboBox;
     m_outputBinComboBox = new QComboBox;
+    m_onlyPrintComboBox = new QComboBox;
 
     QGridLayout *layout = new QGridLayout;
 
@@ -362,6 +365,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     QFormLayout *layoutGroupBoxLayout = new QFormLayout;
     layoutGroupBoxLayout->addRow(new QLabel(tr("Print Both Sides")), m_bothSidesComboBox);
     layoutGroupBoxLayout->addRow(new QLabel(tr("Pages Per Side")), m_pagesPerSideComboBox);
+    layoutGroupBoxLayout->addRow(new QLabel(tr("Only Print Pages")), m_onlyPrintComboBox);
     layoutGroupBoxLayout->addRow(new QLabel(tr("Scale")), m_scaleComboBox);
     layoutGroupBox->setLayout(layoutGroupBoxLayout);
 
@@ -383,6 +387,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     m_paperSizeComboBox->setProperty("cpdbOptionName", QString::fromUtf8("media"));
     m_orientationComboBox->setProperty("cpdbOptionName", QString::fromUtf8("orientation-requested"));
     m_outputBinComboBox->setProperty("cpdbOptionName", QString::fromUtf8("output-bin"));
+    m_onlyPrintComboBox->setProperty("cpdbOptionName", QString::fromUtf8("page-set"));
 
     (void)parent;
 }
