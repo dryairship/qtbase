@@ -45,6 +45,7 @@ private:
     QComboBox *m_orientationComboBox;
     QComboBox *m_bothSidesComboBox;
     QComboBox *m_pagesPerSideComboBox;
+    QComboBox *m_pageOrderingComboBox;
     QComboBox *m_scaleComboBox;
     QComboBox *m_paperSourceComboBox;
     QComboBox *m_pageRangeComboBox;

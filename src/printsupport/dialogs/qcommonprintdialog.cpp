@@ -122,6 +122,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     connectComboBoxSignal(m_optionsTab->m_colorModeComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_bothSidesComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_pagesPerSideComboBox);
+    connectComboBoxSignal(m_pageSetupTab->m_pageOrderingComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_scaleComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_onlyPrintComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_outputBinComboBox);
@@ -200,6 +201,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
 
     updateComboBox(m_pageSetupTab->m_bothSidesComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options, &usedKeys);
+    updateComboBox(m_pageSetupTab->m_pageOrderingComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_onlyPrintComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_scaleComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_paperSizeComboBox, options, &usedKeys);
@@ -409,6 +411,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 {
     m_bothSidesComboBox = new QComboBox;
     m_pagesPerSideComboBox = new QComboBox;
+    m_pageOrderingComboBox = new QComboBox;
     m_scaleComboBox = new QComboBox;
     m_paperSourceComboBox = new QComboBox;
     m_pageRangeComboBox = new QComboBox;
@@ -423,6 +426,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     QFormLayout *layoutGroupBoxLayout = new QFormLayout;
     layoutGroupBoxLayout->addRow(new QLabel(tr("Print Both Sides")), m_bothSidesComboBox);
     layoutGroupBoxLayout->addRow(new QLabel(tr("Pages Per Side")), m_pagesPerSideComboBox);
+    layoutGroupBoxLayout->addRow(new QLabel(tr("Page Ordering")), m_pageOrderingComboBox);
     layoutGroupBoxLayout->addRow(new QLabel(tr("Only Print Pages")), m_onlyPrintComboBox);
     layoutGroupBoxLayout->addRow(new QLabel(tr("Scale")), m_scaleComboBox);
     layoutGroupBox->setLayout(layoutGroupBoxLayout);
@@ -441,6 +445,7 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
 
     m_bothSidesComboBox->setProperty("cpdbOptionName", QString::fromUtf8("sides"));
     m_pagesPerSideComboBox->setProperty("cpdbOptionName", QString::fromUtf8("number-up"));
+    m_pageOrderingComboBox->setProperty("cpdbOptionName", QString::fromUtf8("number-up-layout"));
     m_scaleComboBox->setProperty("cpdbOptionName", QString::fromUtf8("print-scaling"));
     m_paperSizeComboBox->setProperty("cpdbOptionName", QString::fromUtf8("media"));
     m_orientationComboBox->setProperty("cpdbOptionName", QString::fromUtf8("orientation-requested"));
