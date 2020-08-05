@@ -224,6 +224,9 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         );
         updateComboBox(newComboBox, options, &usedKeys);
     }
+
+    if(!m_jobsTab->m_startJobAtRadioButton->isChecked())
+        m_jobsTab->m_startJobAtComboBox->setEnabled(false);
 }
 
 void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
@@ -386,6 +389,7 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     m_rangeCurrentPageRadioButton->setEnabled(false);
     m_rangeSelectionRadioButton->setEnabled(false);
     m_customRangeLineEdit->setEnabled(false);
+    m_rangeAllRadioButton->setChecked(true);
 
     QStringList destinationWidgetHeaders = {tr("Printer"), tr("Location"), tr("State")};
     m_destinationWidget->setHorizontalHeaderLabels(destinationWidgetHeaders);
@@ -510,6 +514,7 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
 
     setLayout(layout);
 
+    m_startJobNowRadioButton->setChecked(true);
     m_startJobAtComboBox->setEnabled(false);
 
     m_startJobAtComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-hold-until"));
