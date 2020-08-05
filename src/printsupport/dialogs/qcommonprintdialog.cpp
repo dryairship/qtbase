@@ -216,6 +216,8 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     updateComboBox(m_jobsTab->m_jobSheetsComboBox, options, &usedKeys);
 
     m_extraOptionsTab->deleteAllComboBoxes();
+
+    int extraCount = 0;
     for (auto it = options.begin(); it != options.end(); it++) {
         if(usedKeys.contains(it.key()))
             continue;
@@ -225,7 +227,10 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
             this, SLOT(comboBoxValueChanged(QString))
         );
         updateComboBox(newComboBox, options, &usedKeys);
+        extraCount++;
     }
+
+    m_tabWidget->setTabEnabled(4, extraCount>0);
 
     if(!m_jobsTab->m_startJobAtRadioButton->isChecked())
         m_jobsTab->m_startJobAtComboBox->setEnabled(false);
