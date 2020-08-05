@@ -527,6 +527,10 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     m_jobPriorityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-priority"));
     m_jobSheetsComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-sheets"));
 
+    QString defaultJobName = QDateTime::currentDateTime()
+        .toString(QString::fromUtf8("Job @ h:m:s AP on ddd, MMMM d, yyyy"));
+    m_jobNameLineEdit->setText(defaultJobName);
+
     (void)parent;
 }
 
