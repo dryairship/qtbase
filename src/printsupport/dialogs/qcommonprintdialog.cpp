@@ -218,10 +218,10 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     m_extraOptionsTab->deleteAllComboBoxes();
 
     int extraCount = 0;
-    for (auto it = options.begin(); it != options.end(); it++) {
-        if(usedKeys.contains(it.key()))
+    for (QString optionKey : options.keys()) {
+        if(usedKeys.contains(optionKey))
             continue;
-        QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(it.key());
+        QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(optionKey);
         QObject::connect(
             newComboBox, SIGNAL(currentTextChanged(QString)),
             this, SLOT(comboBoxValueChanged(QString))
@@ -230,7 +230,9 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         extraCount++;
     }
 
-    m_tabWidget->setTabEnabled(4, extraCount>0);
+    int extraOptionsTabIndex = m_tabWidget->indexOf(m_extraOptionsTab);
+    bool enableExtraOptionsTab = extraCount>0;
+    m_tabWidget->setTabEnabled(extraOptionsTabIndex, enableExtraOptionsTab);
 
     if(!m_jobsTab->m_startJobAtRadioButton->isChecked())
         m_jobsTab->m_startJobAtComboBox->setEnabled(false);
