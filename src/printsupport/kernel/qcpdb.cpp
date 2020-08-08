@@ -235,3 +235,9 @@ void CommonPrintDialogBackend::setPageRange(QVariant range)
                        : range.value<QString>().toLatin1().data()
     );
 }
+
+void CommonPrintDialogBackend::printFile(QString filePath)
+{
+    qDebug("Printing file: %s", filePath.toLatin1().data());
+    print_file(m_printerObj, filePath.toLatin1().data());
+}

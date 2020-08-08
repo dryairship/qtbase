@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QPair>
 #include <QStringList>
-
+#include <memory>
 
 // Check if cpdb-libs is installed on the system
 #if __has_include(<cpdb-libs-frontend.h>)
@@ -14,6 +14,8 @@
 #else
   #define QCPDB_USING_CPDB 0
 #endif
+
+#define PPK_CommonPrintDialogBackend QPrintEngine::PrintEnginePropertyKey(0xfd00)
 
 // Forward declaration of classes in cpdb-libs-frontend.h
 struct _FrontendObj;
@@ -95,11 +97,14 @@ public:
     void setCollateEnabled(bool enabled);
     void setReversePageOrder(bool reverse);
     void setSelectableOption(QString optionName, QString optionValue);
+    void printFile(QString filePath);
 
 private:
     FrontendObj *m_frontendObj;
     PrinterObj *m_printerObj;
     char* m_id;
 };
+
+Q_DECLARE_METATYPE(std::shared_ptr<CommonPrintDialogBackend>)
 
 #endif // QCPDB_P_H

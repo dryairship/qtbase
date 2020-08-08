@@ -40,6 +40,7 @@ win32 {
 }
 
 unix:!darwin:qtConfig(cups) {
+        INCLUDEPATH += $$QT_SOURCE_TREE/src/plugins/printsupport/cpdb
         SOURCES += $$PWD/qcups.cpp
         HEADERS += $$PWD/qcups_p.h
 }

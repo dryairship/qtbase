@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <QtWidgets/QtWidgets>
+#include <QtPrintSupport>
 #include <QtPrintSupport/private/qcpdb_p.h>
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
@@ -167,10 +168,11 @@ class QCommonPrintDialog : public QDialog
     Q_OBJECT
 private:
     CommonPrintDialogMainLayout *m_mainLayout;
+    QPrinter *m_printer;
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
 public:
-    explicit QCommonPrintDialog(QWidget *parent = nullptr);
+    explicit QCommonPrintDialog(QPrinter *printer = nullptr, QWidget *parent = nullptr);
 };
 
 QT_END_NAMESPACE
