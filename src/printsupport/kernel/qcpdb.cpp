@@ -37,7 +37,10 @@ CpdbPrinterListMaintainer::CpdbPrinterListMaintainer()
 
 CpdbPrinterListMaintainer* CpdbPrinterListMaintainer::getInstance()
 {
-    if (!m_instance) m_instance = new CpdbPrinterListMaintainer;
+    // Create a new instanse if it does not exist
+    if (!m_instance)
+        m_instance = new CpdbPrinterListMaintainer;
+
     return m_instance;
 }
 
@@ -45,6 +48,7 @@ int CpdbPrinterListMaintainer::addPrinter(PrinterObj *p)
 {
     qDebug("Adding printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
+    // Add a new printer to the printerList map
     printerList[QString::fromUtf8(p->id)] = new CpdbPrinter(
         QString::fromUtf8(p->id),
         QString::fromUtf8(p->backend_name),
@@ -52,6 +56,7 @@ int CpdbPrinterListMaintainer::addPrinter(PrinterObj *p)
         QString::fromUtf8(p->location),
         QString::fromUtf8(p->state)
     );
+
     emit (getInstance()->printerListChanged());
 
     return 0;
@@ -61,7 +66,9 @@ int CpdbPrinterListMaintainer::removePrinter(PrinterObj *p)
 {
     qDebug("Removing printer: name=%s, id=%s, backend=%s", p->name, p->id, p->backend_name);
 
+    // Delete the removed printer from the printerList map
     printerList.remove(QString::fromUtf8(p->id));
+
     emit (getInstance()->printerListChanged());
 
     return 0;
@@ -83,15 +90,22 @@ QStringList CpdbUtils::convertOptionToQStringList(Option* option)
 {
     QStringList qsl;
 
+    // Return an empty list if the option is a null pointer
     if(option == nullptr)
         return qsl;
 
     for(int i = 0; i < option->num_supported; i++) {
+        // This check prevents the default value from being inserted twice into the list.
         if(strcmp(option->supported_values[i], option->default_value) != 0)
             qsl.append(QString::fromUtf8(option->supported_values[i]));
     }
+
+    // Only add default_value if it is set.
+    // The default value (if set) becomes the first item in the list.
+    // This check prevents empty or "NA" strings from going into the combo boxes.
     if(strcmp(option->default_value, "") != 0 && strcmp(option->default_value, "NA") != 0 )
         qsl.prepend(QString::fromUtf8(option->default_value));
+
     return qsl;
 }
 

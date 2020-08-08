@@ -5,6 +5,7 @@
 
 #include <private/qcpdb_p.h>
 #include "qcommonprintdialog.h"
+
 QT_BEGIN_NAMESPACE
 
 QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
@@ -13,7 +14,10 @@ QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
     auto id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1();
     m_backend = std::make_shared<CommonPrintDialogBackend>(id.data());
 
+    // Set the size of the print dialog
     resize(640, 480);
+
+    // Set the layout of the dialog
     m_mainLayout = new CommonPrintDialogMainLayout(this, m_backend, parent);
     setLayout(m_mainLayout);
 }
@@ -22,6 +26,7 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     QCommonPrintDialog* commonPrintDialog, std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
     : m_commonPrintDialog(commonPrintDialog), m_backend(backend)
 {
+    // m_tabWidget contains all the tabs
     m_tabWidget = new QTabWidget;
 
     m_generalTab = new CommonPrintDialogGeneralTab(backend, parent);
@@ -39,16 +44,20 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     m_printButton = new QPushButton(tr("Print"));
     m_printButton->setDefault(true);
     m_cancelButton = new QPushButton(tr("Cancel"));
+
+    // buttonLayout contains the two buttons (Print and Cancel)
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(m_printButton);
     buttonLayout->addWidget(m_cancelButton);
 
+    // controlsLayout is the entire layout containing the buttons and the tab widget
     QVBoxLayout *controlsLayout = new QVBoxLayout;
     controlsLayout->addWidget(m_tabWidget);
     controlsLayout->addItem(buttonLayout);
 
     addItem(controlsLayout);
 
+    // Connect signals for all the components to the respective slots
     connectSignalsAndSlots();
 }
 
@@ -64,11 +73,13 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         m_commonPrintDialog, SLOT(reject())
     );
 
+    // To update the displayed printers whenever the printer list changes at the backend
     QObject::connect(
         CpdbPrinterListMaintainer::getInstance(), SIGNAL(printerListChanged()),
         this, SLOT(printerListChanged())
     );
 
+    // To load the options for the newly selected printer
     QObject::connect(
         m_generalTab->m_destinationWidget, SIGNAL(currentCellChanged(int, int, int, int)),
         this, SLOT(newPrinterSelected(int))
@@ -94,6 +105,8 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(reverseCheckBoxStateChanged(int))
     );
 
+    // Paper size combobox has a separate slot because we need to convert paper
+    // sizes from human readable names to code names before setting the option
     QObject::connect(
         m_pageSetupTab->m_paperSizeComboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(paperSizeComboBoxValueChanged(QString))
@@ -109,15 +122,18 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(lineEditTextChanged(QString))
     );
 
+    // Connect signals for the page range radio buttons
     connectRangeRadioButtonSignal(m_generalTab->m_rangeAllRadioButton);
     connectRangeRadioButtonSignal(m_generalTab->m_rangeCurrentPageRadioButton);
     connectRangeRadioButtonSignal(m_generalTab->m_rangeSelectionRadioButton);
     connectRangeRadioButtonSignal(m_generalTab->m_rangeCustomRangeRadioButton);
 
+    // Connect signals for the start-job time radio buttons
     connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobNowRadioButton);
     connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobAtRadioButton);
     connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobOnHoldRadioButton);
 
+    // Connect signals for all the generic combo boxes
     connectComboBoxSignal(m_pageSetupTab->m_orientationComboBox);
     connectComboBoxSignal(m_optionsTab->m_colorModeComboBox);
     connectComboBoxSignal(m_pageSetupTab->m_bothSidesComboBox);
@@ -164,41 +180,69 @@ void CommonPrintDialogMainLayout::printerListChanged()
 
     CpdbPrinterList printers = m_backend->getAvailablePrinters();
     m_generalTab->m_destinationWidget->setRowCount(printers.size());
+
+    // count variable is required to determine which row in the
+    // destination table corresponds to which printer
     int count = 0;
+
     for(auto printer : printers) {
+        // Insert the items at row index `count`
         m_generalTab->m_destinationWidget->setItem(count, 0, new QTableWidgetItem(printer->name));
         m_generalTab->m_destinationWidget->setItem(count, 1, new QTableWidgetItem(printer->location));
         m_generalTab->m_destinationWidget->setItem(count, 2, new QTableWidgetItem(printer->state));
+
+        // Columns 3 and 4 are hidden in the destination table
         m_generalTab->m_destinationWidget->setItem(count, 3, new QTableWidgetItem(printer->id));
         m_generalTab->m_destinationWidget->setItem(count, 4, new QTableWidgetItem(printer->backend));
         count ++;
     }
+
+    // Whenever the printers list is updated, the topmost printer is selected
+    // This is to ensure that one printer is always selected
     m_generalTab->m_destinationWidget->setCurrentCell(0, 0);
     newPrinterSelected(0);
 }
 
 void CommonPrintDialogMainLayout::newPrinterSelected(int row)
 {
+    // Extract data from the hidden columns 3 (id) and 4 (backend)
     QString id = m_generalTab->m_destinationWidget->item(row, 3)->text();
     QString backend = m_generalTab->m_destinationWidget->item(row, 4)->text();
+
     qDebug("qCPD: New Printer Selected: %s, %s", id.toLocal8Bit().data(), backend.toLocal8Bit().data());
+
+    // Tell the backend about the newly selected printer, so it may load the options for this printer
     m_backend->setCurrentPrinter(id, backend);
+
+    // Retrieve the options for the newly selected printer
     QMap<QString, QStringList> options = m_backend->getOptionsForCurrentPrinter();
     for (auto it = options.begin(); it != options.end(); it++) {
         qDebug("Option %s: [%s]", it.key().toLocal8Bit().data(), it.value().join(tr(", ")).toLocal8Bit().data());
     }
 
+    // usedKeys is a set that contains the names of those options that have been handled by
+    // the print dialog. Any options not handled by the dialog will have to be displayed
+    // in the extra-options tab.
     QSet<QString> usedKeys;
+
+    // Add those options into the usedKeys set that are not combo boxes.
+    // The options that will be combo-boxes will be added into the usedKeys
+    // set in the updateComboBox method.
     usedKeys.insert(QString::fromUtf8("copies")); // will be an integer in a spin box
     usedKeys.insert(QString::fromUtf8("multiple-document-handling")); // will be a check box
     usedKeys.insert(QString::fromUtf8("page-delivery")); // will be a check box
     usedKeys.insert(QString::fromUtf8("page-ranges")); // will be a radio button group
     usedKeys.insert(QString::fromUtf8("job-name")); // will be a line edit box
 
+    // Convert paper sizes from code names to human readable names
     options[QString::fromUtf8("media")] = CpdbUtils::convertPaperSizesToReadable(options[QString::fromUtf8("media")]);
+
+    // Remove these two options from the list because they will be displayed as radio buttons
     options[QString::fromUtf8("job-hold-until")].removeOne(QString::fromUtf8("no-hold"));
     options[QString::fromUtf8("job-hold-until")].removeOne(QString::fromUtf8("indefinite"));
 
+    // Update the combo boxes with the options for the newly selected printer, and add
+    // the option names to the usedKeys set.
     updateComboBox(m_pageSetupTab->m_bothSidesComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_pagesPerSideComboBox, options, &usedKeys);
     updateComboBox(m_pageSetupTab->m_pageOrderingComboBox, options, &usedKeys);
@@ -215,12 +259,18 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     updateComboBox(m_jobsTab->m_jobPriorityComboBox, options, &usedKeys);
     updateComboBox(m_jobsTab->m_jobSheetsComboBox, options, &usedKeys);
 
+    // Clear the extraOptions tab
     m_extraOptionsTab->deleteAllComboBoxes();
 
+    // extraCount maintains the number of items in the extraOptions tab.
+    // If this number is 0, we will disable the extraOptions tab.
     int extraCount = 0;
+
     for (QString optionKey : options.keys()) {
+        // SKip those options that have been handled by the dialog
         if(usedKeys.contains(optionKey))
             continue;
+
         QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(optionKey);
         QObject::connect(
             newComboBox, SIGNAL(currentTextChanged(QString)),
@@ -230,10 +280,14 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         extraCount++;
     }
 
+    // Disable or enable the extraOptions tab based on extraCount value
     int extraOptionsTabIndex = m_tabWidget->indexOf(m_extraOptionsTab);
     bool enableExtraOptionsTab = extraCount>0;
     m_tabWidget->setTabEnabled(extraOptionsTabIndex, enableExtraOptionsTab);
 
+    // HACK: Updating the values in the m_startJobAtComboBox automatically enables it,
+    // HACK: even if the start job option is set to "Now" or "On Hold". So we manually
+    // HACK: disable this combo box.
     if(!m_jobsTab->m_startJobAtRadioButton->isChecked())
         m_jobsTab->m_startJobAtComboBox->setEnabled(false);
 }
@@ -268,6 +322,8 @@ void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
 
 void CommonPrintDialogMainLayout::rangeRadioButtonChanged(bool checked)
 {
+    // Since this slot is called upon every toggle of a radio button, we want
+    // to filter the events to only those when a radio button is selected.
     if(!checked)
         return;
 
@@ -288,6 +344,8 @@ void CommonPrintDialogMainLayout::rangeRadioButtonChanged(bool checked)
 
 void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
 {
+    // Since this slot is called upon every toggle of a radio button, we want
+    // to filter the events to only those when a radio button is selected.
     if(!checked)
         return;
 
@@ -341,6 +399,7 @@ void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QStri
     comboBox->clear();
     if(options.contains(optionName))
         comboBox->addItems(options[optionName]);
+    // Enable this combobox only if it has some selectable values
     comboBox->setEnabled(comboBox->count() != 0);
     usedKeys->insert(optionName);
 }
@@ -349,7 +408,9 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : QWidget(parent), m_backend(backend)
 {
+    // Initially, the table has 0 rows and 5 columns
     m_destinationWidget = new QTableWidget(0, 5, this);
+
     m_remotePrintersCheckBox = new QCheckBox;
     m_copiesSpinBox = new QSpinBox;
     m_collateCheckBox = new QCheckBox;
@@ -386,6 +447,8 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     QHBoxLayout *bottomLayout = new QHBoxLayout;
     bottomLayout->addWidget(rangeGroupBox);
     bottomLayout->addWidget(copiesGroupBox);
+
+    // Set the columns 0 and 1 to have 1:1 ratio of width
     bottomLayout->setStretch(0,1);
     bottomLayout->setStretch(1,1);
 
@@ -405,8 +468,11 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     m_destinationWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_destinationWidget->horizontalHeader()->setHighlightSections(false);
     m_destinationWidget->verticalHeader()->setHighlightSections(false);
+    // Hide the columns 3 (printer id) and 4 (printer backend)
     m_destinationWidget->setColumnHidden(3, true);
     m_destinationWidget->setColumnHidden(4, true);
+
+    // Allow selection of entire rows instead of single columns
     m_destinationWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     setLayout(layout);
@@ -534,6 +600,7 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     m_jobPriorityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-priority"));
     m_jobSheetsComboBox->setProperty("cpdbOptionName", QString::fromUtf8("job-sheets"));
 
+    // Set the default job name to contain the current time
     QString defaultJobName = QDateTime::currentDateTime()
         .toString(QString::fromUtf8("Job @ h:m:s AP on ddd, MMMM d, yyyy"));
     m_jobNameLineEdit->setText(defaultJobName);
