@@ -472,8 +472,9 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     m_destinationWidget->setColumnHidden(3, true);
     m_destinationWidget->setColumnHidden(4, true);
 
-    // Allow selection of entire rows instead of single columns
+    // Allow selection of a single entire row instead of cells
     m_destinationWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_destinationWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
     setLayout(layout);
 }
