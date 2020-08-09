@@ -67,7 +67,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
 {
     QObject::connect(
         m_printButton, SIGNAL(clicked()),
-        m_commonPrintDialog, SLOT(accept())
+        this, SLOT(applySettingsAndAccept())
     );
 
     QObject::connect(
@@ -92,21 +92,6 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(remotePrintersCheckBoxStateChanged(int))
     );
 
-    QObject::connect(
-        m_generalTab->m_copiesSpinBox, SIGNAL(valueChanged(int)),
-        this, SLOT(copiesSpinBoxValueChanged(int))
-    );
-
-    QObject::connect(
-        m_generalTab->m_collateCheckBox, SIGNAL(stateChanged(int)),
-        this, SLOT(collateCheckBoxStateChanged(int))
-    );
-
-    QObject::connect(
-        m_generalTab->m_reverseCheckBox, SIGNAL(stateChanged(int)),
-        this, SLOT(reverseCheckBoxStateChanged(int))
-    );
-
     // Paper size combobox has a separate slot because we need to convert paper
     // sizes from human readable names to code names before setting the option
     QObject::connect(
@@ -115,20 +100,9 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
-        m_generalTab->m_customRangeLineEdit, SIGNAL(textChanged(QString)),
-        this, SLOT(customRangeLineEditTextChanged(QString))
+        m_generalTab->m_rangeCustomRangeRadioButton, SIGNAL(toggled(bool)),
+        m_generalTab->m_customRangeLineEdit, SLOT(setEnabled(bool))
     );
-
-    QObject::connect(
-        m_jobsTab->m_jobNameLineEdit, SIGNAL(textChanged(QString)),
-        this, SLOT(lineEditTextChanged(QString))
-    );
-
-    // Connect signals for the page range radio buttons
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeAllRadioButton);
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeCurrentPageRadioButton);
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeSelectionRadioButton);
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeCustomRangeRadioButton);
 
     // Connect signals for the start-job time radio buttons
     connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobNowRadioButton);
@@ -157,14 +131,6 @@ void CommonPrintDialogMainLayout::connectComboBoxSignal(QComboBox* comboBox)
     QObject::connect(
         comboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(comboBoxValueChanged(QString))
-    );
-}
-
-void CommonPrintDialogMainLayout::connectRangeRadioButtonSignal(QRadioButton* radioButton)
-{
-    QObject::connect(
-        radioButton, SIGNAL(toggled(bool)),
-        this, SLOT(rangeRadioButtonChanged(bool))
     );
 }
 
@@ -230,6 +196,8 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     // Add those options into the usedKeys set that are not combo boxes.
     // The options that will be combo-boxes will be added into the usedKeys
     // set in the updateComboBox method.
+    // IMPORTANT: These settings must be applied when the dialog box is accepted,
+    // by calling the appropriate backend functions in applySettingsAndAccept()
     usedKeys.insert(QString::fromUtf8("copies")); // will be an integer in a spin box
     usedKeys.insert(QString::fromUtf8("multiple-document-handling")); // will be a check box
     usedKeys.insert(QString::fromUtf8("page-delivery")); // will be a check box
@@ -301,13 +269,6 @@ void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
     m_backend->setSelectableOption(optionName, currentText);
 }
 
-void CommonPrintDialogMainLayout::lineEditTextChanged(QString currentText)
-{
-    QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
-    qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
-    m_backend->setSelectableOption(optionName, currentText);
-}
-
 void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
 {
     QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
@@ -320,28 +281,6 @@ void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
 {
     qDebug("qCPD: remotePrintersStateChanged: %d", state);
     m_backend->setRemotePrintersVisible(state == Qt::Checked);
-}
-
-void CommonPrintDialogMainLayout::rangeRadioButtonChanged(bool checked)
-{
-    // Since this slot is called upon every toggle of a radio button, we want
-    // to filter the events to only those when a radio button is selected.
-    if(!checked)
-        return;
-
-    QRadioButton *radioButton = static_cast<QRadioButton *>(sender());
-    QString radioButtonText = radioButton->text();
-
-    if(radioButtonText == tr("All")) {
-        qDebug("qCPD: rangeRadioButton: All");
-        m_backend->setPageRange(QString());
-        m_generalTab->m_customRangeLineEdit->setEnabled(false);
-    } else if(radioButtonText == tr("Pages: ")) {
-        QString range = m_generalTab->m_customRangeLineEdit->text();
-        qDebug("qCPD: rangeRadioButton: Pages: %s", range.toLatin1().data());
-        m_backend->setPageRange(range);
-        m_generalTab->m_customRangeLineEdit->setEnabled(true);
-    }
 }
 
 void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
@@ -371,31 +310,6 @@ void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
     }
 }
 
-void CommonPrintDialogMainLayout::customRangeLineEditTextChanged(QString currentText)
-{
-    qDebug("qCPD: rangeRadioButton: Pages: %s", currentText.toLatin1().data());
-    m_backend->setPageRange(currentText);
-}
-
-void CommonPrintDialogMainLayout::copiesSpinBoxValueChanged(int value)
-{
-    qDebug("qCPD: copiesValueChanged: %d", value);
-    m_generalTab->m_collateCheckBox->setEnabled(value != 1);
-    m_backend->setNumCopies(value);
-}
-
-void CommonPrintDialogMainLayout::collateCheckBoxStateChanged(int state)
-{
-    qDebug("qCPD: collateStateChanged: %d", state);
-    m_backend->setCollateEnabled(state == Qt::Checked);
-}
-
-void CommonPrintDialogMainLayout::reverseCheckBoxStateChanged(int state)
-{
-    qDebug("qCPD: reverseStateChanged: %d", state);
-    m_backend->setReversePageOrder(state == Qt::Checked);
-}
-
 void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys)
 {
     QString optionName = qvariant_cast<QString>(comboBox->property("cpdbOptionName"));
@@ -405,6 +319,21 @@ void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QStri
     // Enable this combobox only if it has some selectable values
     comboBox->setEnabled(comboBox->count() != 0);
     usedKeys->insert(optionName);
+}
+
+void CommonPrintDialogMainLayout::applySettingsAndAccept()
+{
+    // Add those settings to printers which are not combo boxes
+    m_backend->setNumCopies(m_generalTab->m_copiesSpinBox->value());
+    m_backend->setCollateEnabled(m_generalTab->m_collateCheckBox->isChecked());
+    m_backend->setReversePageOrder(m_generalTab->m_reverseCheckBox->isChecked());
+    m_backend->setSelectableOption(QString::fromUtf8("job-name"), m_jobsTab->m_jobNameLineEdit->text());
+    if(m_generalTab->m_rangeAllRadioButton->isChecked())
+        m_backend->setPageRange(QString::fromUtf8("1-9999"));
+    else if(m_generalTab->m_rangeCustomRangeRadioButton->isChecked())
+        m_backend->setPageRange(m_generalTab->m_customRangeLineEdit->text());
+
+    m_commonPrintDialog->accept();
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
@@ -460,7 +389,6 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
-    m_collateCheckBox->setEnabled(false);
     m_rangeCurrentPageRadioButton->setEnabled(false);
     m_rangeSelectionRadioButton->setEnabled(false);
     m_customRangeLineEdit->setEnabled(false);

@@ -147,15 +147,10 @@ private Q_SLOTS:
     void printerListChanged();
     void newPrinterSelected(int row);
     void remotePrintersCheckBoxStateChanged(int state);
-    void customRangeLineEditTextChanged(QString currentText);
-    void lineEditTextChanged(QString currentText);
-    void rangeRadioButtonChanged(bool checked);
     void startJobAtRadioButtonChanged(bool checked);
-    void copiesSpinBoxValueChanged(int value);
-    void collateCheckBoxStateChanged(int state);
-    void reverseCheckBoxStateChanged(int state);
     void comboBoxValueChanged(QString currentText);
     void paperSizeComboBoxValueChanged(QString currentText);
+    void applySettingsAndAccept();
 
 public:
     explicit CommonPrintDialogMainLayout(QCommonPrintDialog *commonPrintDialog,
