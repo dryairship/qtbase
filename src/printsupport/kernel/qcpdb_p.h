@@ -97,6 +97,7 @@ public:
     void setCollateEnabled(bool enabled);
     void setReversePageOrder(bool reverse);
     void setSelectableOption(QString optionName, QString optionValue);
+    void printFile(QString filePath);
 
 private:
     FrontendObj *m_frontendObj;

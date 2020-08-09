@@ -43,7 +43,7 @@ bool QCpdbPrintEnginePrivate::openPrintDevice()
     if (outDevice)
         return false;
 
-    QString cpdbTempFile = QString::fromLocal8Bit("/tmp/qtcpdb.pdf");
+    cpdbTempFile = QString::fromLocal8Bit("/tmp/qtcpdb.pdf");
     outDevice = new QFile(cpdbTempFile);
     static_cast<QFile *>(outDevice)->open(QIODevice::WriteOnly);
 
@@ -53,7 +53,8 @@ bool QCpdbPrintEnginePrivate::openPrintDevice()
 void QCpdbPrintEnginePrivate::closePrintDevice()
 {
     QPdfPrintEnginePrivate::closePrintDevice();
-    qDebug("Printer closing. PDF would have been written. TODO: Send it to backend.");
+    m_backend->printFile(cpdbTempFile);
+    qDebug("File Printed.");
 }
 
 QT_END_NAMESPACE

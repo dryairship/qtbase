@@ -32,6 +32,7 @@ class QCpdbPrintEnginePrivate : public QPdfPrintEnginePrivate
     Q_DECLARE_PUBLIC(QCpdbPrintEngine)
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
+    QString cpdbTempFile;
 public:
     QCpdbPrintEnginePrivate(QPrinter::PrinterMode m);
 
