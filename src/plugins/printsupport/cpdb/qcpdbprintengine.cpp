@@ -1,5 +1,6 @@
-
 #include "qcpdbprintengine_p.h"
+
+#include <memory>
 
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
@@ -7,6 +8,8 @@
 #include <qiodevice.h>
 #include <qfile.h>
 #include <qdebug.h>
+
+#include "private/qcpdb_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -21,6 +24,19 @@ QCpdbPrintEnginePrivate::QCpdbPrintEnginePrivate(QPrinter::PrinterMode m)
 {
 }
 
+void QCpdbPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
+{
+    Q_D(QCpdbPrintEngine);
+
+    switch (int(key)) {
+    case PPK_CommonPrintDialogBackend:
+        d->m_backend = value.value<std::shared_ptr<CommonPrintDialogBackend>>();
+        break;
+    default:
+        QPdfPrintEngine::setProperty(key, value);
+        break;
+    }
+}
 
 bool QCpdbPrintEnginePrivate::openPrintDevice()
 {

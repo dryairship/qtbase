@@ -8,11 +8,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QCommonPrintDialog::QCommonPrintDialog(QWidget *parent)
-    : QDialog (parent)
+QCommonPrintDialog::QCommonPrintDialog(QPrinter *printer, QWidget *parent)
+    : QDialog (parent), m_printer(printer)
 {
     auto id = QUuid::createUuid().toString().remove('{').remove('}').toLatin1();
     m_backend = std::make_shared<CommonPrintDialogBackend>(id.data());
+    QVariant backendAsQVariant = QVariant::fromValue(m_backend);
+    m_printer->printEngine()->setProperty(PPK_CommonPrintDialogBackend, backendAsQVariant);
 
     // Set the size of the print dialog
     resize(640, 480);

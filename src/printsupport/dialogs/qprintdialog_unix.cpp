@@ -232,7 +232,7 @@ public:
     ~QPrintDialogPrivate();
 
     void init();
-    void initCpd(QWidget* parent);
+    void initCpd(QPrinter *printer, QWidget* parent);
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
@@ -625,9 +625,9 @@ QPrintDialogPrivate::~QPrintDialogPrivate()
 {
 }
 
-void QPrintDialogPrivate::initCpd(QWidget* parent)
+void QPrintDialogPrivate::initCpd(QPrinter* printer, QWidget* parent)
 {
-    qcpd = new QCommonPrintDialog(parent);
+    qcpd = new QCommonPrintDialog(printer, parent);
 }
 
 void QPrintDialogPrivate::init()
@@ -1072,7 +1072,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
 {
     Q_D(QPrintDialog);
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    d->initCpd(parent);
+    d->initCpd(printer, parent);
     return;
 #endif
     d->init();
@@ -1086,7 +1086,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
 {
     Q_D(QPrintDialog);
 #if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
-    d->initCpd(parent);
+    d->initCpd(nullptr, parent);
     return;
 #endif
     d->init();
