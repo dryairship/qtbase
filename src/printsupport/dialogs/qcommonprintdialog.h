@@ -65,20 +65,25 @@ class CommonPrintDialogOptionsTab : public QWidget
     Q_OBJECT
 
 private:
-    QLineEdit *m_marginTopValue;
-    QLineEdit *m_marginBottomValue;
-    QLineEdit *m_marginLeftValue;
-    QLineEdit *m_marginRightValue;
+    QDoubleSpinBox *m_marginTopValue;
+    QDoubleSpinBox *m_marginBottomValue;
+    QDoubleSpinBox *m_marginLeftValue;
+    QDoubleSpinBox *m_marginRightValue;
+    QComboBox *m_marginUnitComboBox;
     QComboBox *m_resolutionComboBox;
     QComboBox *m_qualityComboBox;
     QComboBox *m_finishingsComboBox;
     QComboBox *m_ippAttributeFidelityComboBox;
     QComboBox *m_colorModeComboBox;
     QFormLayout *m_layout;
+    QFormLayout *m_extraOptionsLayout;
+    QGroupBox *m_extraOptionsGroupBox;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
     explicit CommonPrintDialogOptionsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
+    QComboBox *addNewComboBox(QString name);
+    void deleteAllComboBoxes();
 
     friend class CommonPrintDialogMainLayout;
 };
@@ -103,22 +108,6 @@ private:
     friend class CommonPrintDialogMainLayout;
 };
 
-class CommonPrintDialogExtraOptionsTab : public QWidget
-{
-    Q_OBJECT
-
-private:
-    QFormLayout *m_layout;
-
-    std::shared_ptr<CommonPrintDialogBackend> m_backend;
-
-    explicit CommonPrintDialogExtraOptionsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
-    QComboBox *addNewComboBox(QString name);
-    void deleteAllComboBoxes();
-
-    friend class CommonPrintDialogMainLayout;
-};
-
 class CommonPrintDialogMainLayout : public QHBoxLayout
 {
     Q_OBJECT
@@ -133,7 +122,6 @@ private:
     CommonPrintDialogPageSetupTab *m_pageSetupTab;
     CommonPrintDialogOptionsTab *m_optionsTab;
     CommonPrintDialogJobsTab *m_jobsTab;
-    CommonPrintDialogExtraOptionsTab *m_extraOptionsTab;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
@@ -147,15 +135,10 @@ private Q_SLOTS:
     void printerListChanged();
     void newPrinterSelected(int row);
     void remotePrintersCheckBoxStateChanged(int state);
-    void customRangeLineEditTextChanged(QString currentText);
-    void lineEditTextChanged(QString currentText);
-    void rangeRadioButtonChanged(bool checked);
     void startJobAtRadioButtonChanged(bool checked);
-    void copiesSpinBoxValueChanged(int value);
-    void collateCheckBoxStateChanged(int state);
-    void reverseCheckBoxStateChanged(int state);
     void comboBoxValueChanged(QString currentText);
     void paperSizeComboBoxValueChanged(QString currentText);
+    void applySettingsAndAccept();
 
 public:
     explicit CommonPrintDialogMainLayout(QCommonPrintDialog *commonPrintDialog,
@@ -171,6 +154,7 @@ private:
     QPrinter *m_printer;
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
+    friend class CommonPrintDialogMainLayout;
 public:
     explicit QCommonPrintDialog(QPrinter *printer = nullptr, QWidget *parent = nullptr);
 };

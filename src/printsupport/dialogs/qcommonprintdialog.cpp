@@ -35,13 +35,22 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     m_pageSetupTab = new CommonPrintDialogPageSetupTab(backend, parent);
     m_optionsTab = new CommonPrintDialogOptionsTab(backend, parent);
     m_jobsTab = new CommonPrintDialogJobsTab(backend, parent);
-    m_extraOptionsTab = new CommonPrintDialogExtraOptionsTab(backend, parent);
 
     m_tabWidget->addTab(m_generalTab, tr("General"));
     m_tabWidget->addTab(m_pageSetupTab, tr("Page Setup"));
     m_tabWidget->addTab(m_optionsTab, tr("Options"));
     m_tabWidget->addTab(m_jobsTab, tr("Job"));
-    m_tabWidget->addTab(m_extraOptionsTab, tr("Extra Options"));
+
+    QPageLayout currentPageLayout = m_commonPrintDialog->m_printer->pageLayout();
+    QPageLayout::Unit unit = currentPageLayout.units();
+    QMarginsF margins = currentPageLayout.margins();
+    m_optionsTab->m_marginTopValue->setValue(margins.top());
+    m_optionsTab->m_marginBottomValue->setValue(margins.bottom());
+    m_optionsTab->m_marginLeftValue->setValue(margins.left());
+    m_optionsTab->m_marginRightValue->setValue(margins.right());
+    int unitIndex = m_optionsTab->m_marginUnitComboBox->findData(unit);
+    if(unitIndex != -1)
+        m_optionsTab->m_marginUnitComboBox->setCurrentIndex(unitIndex);
 
     m_printButton = new QPushButton(tr("Print"));
     m_printButton->setDefault(true);
@@ -67,7 +76,7 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
 {
     QObject::connect(
         m_printButton, SIGNAL(clicked()),
-        m_commonPrintDialog, SLOT(accept())
+        this, SLOT(applySettingsAndAccept())
     );
 
     QObject::connect(
@@ -92,21 +101,6 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
         this, SLOT(remotePrintersCheckBoxStateChanged(int))
     );
 
-    QObject::connect(
-        m_generalTab->m_copiesSpinBox, SIGNAL(valueChanged(int)),
-        this, SLOT(copiesSpinBoxValueChanged(int))
-    );
-
-    QObject::connect(
-        m_generalTab->m_collateCheckBox, SIGNAL(stateChanged(int)),
-        this, SLOT(collateCheckBoxStateChanged(int))
-    );
-
-    QObject::connect(
-        m_generalTab->m_reverseCheckBox, SIGNAL(stateChanged(int)),
-        this, SLOT(reverseCheckBoxStateChanged(int))
-    );
-
     // Paper size combobox has a separate slot because we need to convert paper
     // sizes from human readable names to code names before setting the option
     QObject::connect(
@@ -115,20 +109,9 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     );
 
     QObject::connect(
-        m_generalTab->m_customRangeLineEdit, SIGNAL(textChanged(QString)),
-        this, SLOT(customRangeLineEditTextChanged(QString))
+        m_generalTab->m_rangeCustomRangeRadioButton, SIGNAL(toggled(bool)),
+        m_generalTab->m_customRangeLineEdit, SLOT(setEnabled(bool))
     );
-
-    QObject::connect(
-        m_jobsTab->m_jobNameLineEdit, SIGNAL(textChanged(QString)),
-        this, SLOT(lineEditTextChanged(QString))
-    );
-
-    // Connect signals for the page range radio buttons
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeAllRadioButton);
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeCurrentPageRadioButton);
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeSelectionRadioButton);
-    connectRangeRadioButtonSignal(m_generalTab->m_rangeCustomRangeRadioButton);
 
     // Connect signals for the start-job time radio buttons
     connectStartJobAtRadioButtonSignal(m_jobsTab->m_startJobNowRadioButton);
@@ -157,14 +140,6 @@ void CommonPrintDialogMainLayout::connectComboBoxSignal(QComboBox* comboBox)
     QObject::connect(
         comboBox, SIGNAL(currentTextChanged(QString)),
         this, SLOT(comboBoxValueChanged(QString))
-    );
-}
-
-void CommonPrintDialogMainLayout::connectRangeRadioButtonSignal(QRadioButton* radioButton)
-{
-    QObject::connect(
-        radioButton, SIGNAL(toggled(bool)),
-        this, SLOT(rangeRadioButtonChanged(bool))
     );
 }
 
@@ -230,6 +205,8 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     // Add those options into the usedKeys set that are not combo boxes.
     // The options that will be combo-boxes will be added into the usedKeys
     // set in the updateComboBox method.
+    // IMPORTANT: These settings must be applied when the dialog box is accepted,
+    // by calling the appropriate backend functions in applySettingsAndAccept()
     usedKeys.insert(QString::fromUtf8("copies")); // will be an integer in a spin box
     usedKeys.insert(QString::fromUtf8("multiple-document-handling")); // will be a check box
     usedKeys.insert(QString::fromUtf8("page-delivery")); // will be a check box
@@ -261,11 +238,11 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     updateComboBox(m_jobsTab->m_jobPriorityComboBox, options, &usedKeys);
     updateComboBox(m_jobsTab->m_jobSheetsComboBox, options, &usedKeys);
 
-    // Clear the extraOptions tab
-    m_extraOptionsTab->deleteAllComboBoxes();
+    // Clear the existing extra options
+    m_optionsTab->deleteAllComboBoxes();
 
-    // extraCount maintains the number of items in the extraOptions tab.
-    // If this number is 0, we will disable the extraOptions tab.
+    // extraCount maintains the number of items in the extraOptions group box.
+    // If this number is 0, we will hide the extraOptions group box.
     int extraCount = 0;
 
     for (QString optionKey : options.keys()) {
@@ -273,7 +250,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         if(usedKeys.contains(optionKey))
             continue;
 
-        QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(optionKey);
+        QComboBox *newComboBox = m_optionsTab->addNewComboBox(optionKey);
         QObject::connect(
             newComboBox, SIGNAL(currentTextChanged(QString)),
             this, SLOT(comboBoxValueChanged(QString))
@@ -282,10 +259,9 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         extraCount++;
     }
 
-    // Disable or enable the extraOptions tab based on extraCount value
-    int extraOptionsTabIndex = m_tabWidget->indexOf(m_extraOptionsTab);
-    bool enableExtraOptionsTab = extraCount>0;
-    m_tabWidget->setTabEnabled(extraOptionsTabIndex, enableExtraOptionsTab);
+    // Show or hide the extraOptions group box based on extraCount value
+    bool showExtraOptionsGroupBox = extraCount>0;
+    m_optionsTab->m_extraOptionsGroupBox->setVisible(showExtraOptionsGroupBox);
 
     // HACK: Updating the values in the m_startJobAtComboBox automatically enables it,
     // HACK: even if the start job option is set to "Now" or "On Hold". So we manually
@@ -301,18 +277,46 @@ void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
     m_backend->setSelectableOption(optionName, currentText);
 }
 
-void CommonPrintDialogMainLayout::lineEditTextChanged(QString currentText)
-{
-    QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
-    qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
-    m_backend->setSelectableOption(optionName, currentText);
-}
-
 void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
 {
+    if(currentText.isEmpty())
+        return;
+
     QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
     qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
     QString pwgSize = CpdbUtils::convertReadablePaperSizeToPWG(currentText);
+
+    static const QString smallX = QString::fromUtf8("x");
+    static const QString underscore = QString::fromUtf8("_");
+    static const QString mmUnit = QString::fromUtf8("mm");
+    static const QString inUnit = QString::fromUtf8("in");
+
+    // pwgSize is of the format `<name>_<width>x<height><unit>`
+    // paperSizeDimensions will be of the format `<width>x<height><unit>`
+    QString paperSizeDimensions = pwgSize.split(underscore).last();
+
+    // Extract the unit from the dimensions. It is always stored in the last 2 characters.
+    QString unitString = paperSizeDimensions.right(2);
+    paperSizeDimensions.remove(unitString); // Remove the unit from the dimensions string.
+
+    QPageSize::Unit unit;
+    if(unitString == mmUnit)
+        unit = QPageSize::Millimeter;
+    else if(unitString == inUnit)
+        unit = QPageSize::Inch;
+    else
+        return; // Unhandled page size
+
+    // Now paperSizeDimensions will be of the format `<width>x<height>`
+    QStringList dimensionsNumbers = paperSizeDimensions.split(smallX);
+    if(dimensionsNumbers.size() != 2)
+        return; // Invalid dimension format
+    qreal width = dimensionsNumbers[0].toDouble();
+    qreal height = dimensionsNumbers[1].toDouble();
+
+    m_commonPrintDialog->m_printer->setPageSize(QPageSize(
+        QSizeF(width, height), unit, pwgSize, QPageSize::ExactMatch));
+
     m_backend->setSelectableOption(optionName, currentText);
 }
 
@@ -320,28 +324,6 @@ void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
 {
     qDebug("qCPD: remotePrintersStateChanged: %d", state);
     m_backend->setRemotePrintersVisible(state == Qt::Checked);
-}
-
-void CommonPrintDialogMainLayout::rangeRadioButtonChanged(bool checked)
-{
-    // Since this slot is called upon every toggle of a radio button, we want
-    // to filter the events to only those when a radio button is selected.
-    if(!checked)
-        return;
-
-    QRadioButton *radioButton = static_cast<QRadioButton *>(sender());
-    QString radioButtonText = radioButton->text();
-
-    if(radioButtonText == tr("All")) {
-        qDebug("qCPD: rangeRadioButton: All");
-        m_backend->setPageRange(QString());
-        m_generalTab->m_customRangeLineEdit->setEnabled(false);
-    } else if(radioButtonText == tr("Pages: ")) {
-        QString range = m_generalTab->m_customRangeLineEdit->text();
-        qDebug("qCPD: rangeRadioButton: Pages: %s", range.toLatin1().data());
-        m_backend->setPageRange(range);
-        m_generalTab->m_customRangeLineEdit->setEnabled(true);
-    }
 }
 
 void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
@@ -371,30 +353,6 @@ void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
     }
 }
 
-void CommonPrintDialogMainLayout::customRangeLineEditTextChanged(QString currentText)
-{
-    qDebug("qCPD: rangeRadioButton: Pages: %s", currentText.toLatin1().data());
-    m_backend->setPageRange(currentText);
-}
-
-void CommonPrintDialogMainLayout::copiesSpinBoxValueChanged(int value)
-{
-    qDebug("qCPD: copiesValueChanged: %d", value);
-    m_generalTab->m_collateCheckBox->setEnabled(value != 1);
-}
-
-void CommonPrintDialogMainLayout::collateCheckBoxStateChanged(int state)
-{
-    qDebug("qCPD: collateStateChanged: %d", state);
-    m_backend->setCollateEnabled(state == Qt::Checked);
-}
-
-void CommonPrintDialogMainLayout::reverseCheckBoxStateChanged(int state)
-{
-    qDebug("qCPD: reverseStateChanged: %d", state);
-    m_backend->setReversePageOrder(state == Qt::Checked);
-}
-
 void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys)
 {
     QString optionName = qvariant_cast<QString>(comboBox->property("cpdbOptionName"));
@@ -404,6 +362,39 @@ void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QStri
     // Enable this combobox only if it has some selectable values
     comboBox->setEnabled(comboBox->count() != 0);
     usedKeys->insert(optionName);
+}
+
+void CommonPrintDialogMainLayout::applySettingsAndAccept()
+{
+    // Add those settings to printers which are not combo boxes
+    m_backend->setNumCopies(m_generalTab->m_copiesSpinBox->value());
+    m_backend->setCollateEnabled(m_generalTab->m_collateCheckBox->isChecked());
+    m_backend->setReversePageOrder(m_generalTab->m_reverseCheckBox->isChecked());
+    m_backend->setSelectableOption(QString::fromUtf8("job-name"), m_jobsTab->m_jobNameLineEdit->text());
+    if(m_generalTab->m_rangeAllRadioButton->isChecked())
+        m_backend->setPageRange(QString::fromUtf8("1-9999"));
+    else if(m_generalTab->m_rangeCustomRangeRadioButton->isChecked())
+        m_backend->setPageRange(m_generalTab->m_customRangeLineEdit->text());
+
+    // Add margins settings to PDF printer
+    QMarginsF margins = QMarginsF(
+        m_optionsTab->m_marginLeftValue->value(),
+        m_optionsTab->m_marginTopValue->value(),
+        m_optionsTab->m_marginRightValue->value(),
+        m_optionsTab->m_marginBottomValue->value()
+    );
+    QVariant marginsUnitVariant = m_optionsTab->m_marginUnitComboBox->currentData();
+    QPageLayout::Unit marginsUnit = marginsUnitVariant.value<QPageLayout::Unit>();
+    m_commonPrintDialog->m_printer->setPageMargins(margins, marginsUnit);
+
+    // Set orientation for the PDF printer
+    QString orientation = m_pageSetupTab->m_orientationComboBox->currentText();
+    if(orientation.contains(QString::fromUtf8("landscape"), Qt::CaseInsensitive))
+        m_commonPrintDialog->m_printer->setPageOrientation(QPageLayout::Landscape);
+    else if(orientation.contains(QString::fromUtf8("portrait"), Qt::CaseInsensitive))
+        m_commonPrintDialog->m_printer->setPageOrientation(QPageLayout::Portrait);
+
+    m_commonPrintDialog->accept();
 }
 
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
@@ -459,7 +450,6 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
 
     m_copiesSpinBox->setRange(1, 9999); // TODO: change 9999 to a dynamically determined value if possible
     m_copiesSpinBox->setValue(1);
-    m_collateCheckBox->setEnabled(false);
     m_rangeCurrentPageRadioButton->setEnabled(false);
     m_rangeSelectionRadioButton->setEnabled(false);
     m_customRangeLineEdit->setEnabled(false);
@@ -535,10 +525,11 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
-    m_marginTopValue = new QLineEdit;
-    m_marginBottomValue = new QLineEdit;
-    m_marginLeftValue = new QLineEdit;
-    m_marginRightValue = new QLineEdit;
+    m_marginTopValue = new QDoubleSpinBox;
+    m_marginBottomValue = new QDoubleSpinBox;
+    m_marginLeftValue = new QDoubleSpinBox;
+    m_marginRightValue = new QDoubleSpinBox;
+    m_marginUnitComboBox = new QComboBox;
     m_resolutionComboBox = new QComboBox;
     m_qualityComboBox = new QComboBox;
     m_colorModeComboBox = new QComboBox;
@@ -546,19 +537,43 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_ippAttributeFidelityComboBox = new QComboBox;
 
     m_layout = new QFormLayout;
+    m_extraOptionsLayout = new QFormLayout;
 
-    m_layout->addRow((new QLabel(tr("Margin"))));
-    m_layout->addRow(new QLabel(tr("Top")), m_marginTopValue);
-    m_layout->addRow(new QLabel(tr("Bottom")), m_marginBottomValue);
-    m_layout->addRow(new QLabel(tr("Left")), m_marginLeftValue);
-    m_layout->addRow(new QLabel(tr("Right")), m_marginRightValue);
-    m_layout->addRow(new QLabel(tr("")));
-    m_layout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
-    m_layout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
-    m_layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
-    m_layout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
+    QGroupBox *marginsGroupBox = new QGroupBox(tr("Margins"));
+    QGridLayout *marginsGroupBoxLayout = new QGridLayout;
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Units")), 0, 0, 1, 2, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginUnitComboBox, 0, 2, 1, 2);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Top")), 1, 0, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginTopValue, 1, 1);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Bottom")), 1, 2, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginBottomValue, 1, 3);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Left")), 2, 0, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginLeftValue, 2, 1);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Right")), 2, 2, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginRightValue, 2, 3);
+    marginsGroupBox->setLayout(marginsGroupBoxLayout);
 
+    QGroupBox *imageGroupBox = new QGroupBox(tr("Image Options"));
+    QFormLayout *imageGroupBoxLayout = new QFormLayout;
+    imageGroupBoxLayout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
+    imageGroupBoxLayout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
+    imageGroupBoxLayout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
+    imageGroupBoxLayout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
+    imageGroupBox->setLayout(imageGroupBoxLayout);
+
+    m_extraOptionsGroupBox = new QGroupBox(tr("Other Options"));
+    m_extraOptionsGroupBox->setLayout(m_extraOptionsLayout);
+
+    m_layout->addRow(marginsGroupBox, imageGroupBox);
+    m_layout->addRow(m_extraOptionsGroupBox);
     setLayout(m_layout);
+
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Millimeter"), QPageLayout::Millimeter);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Point"), QPageLayout::Point);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Inch"), QPageLayout::Inch);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Pica"), QPageLayout::Pica);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Didot"), QPageLayout::Didot);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Cicero"), QPageLayout::Cicero);
 
     m_resolutionComboBox->setProperty("cpdbOptionName", QString::fromUtf8("printer-resolution"));
     m_qualityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("print-quality"));
@@ -611,29 +626,19 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     (void)parent;
 }
 
-CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
-    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : m_backend(backend)
-{
-    m_layout = new QFormLayout;
-    setLayout(m_layout);
-
-    (void)parent;
-}
-
-QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
+QComboBox *CommonPrintDialogOptionsTab::addNewComboBox(QString name)
 {
     QComboBox *comboBox = new QComboBox;
     comboBox->setProperty("cpdbOptionName", name);
-    m_layout->addRow(new QLabel(name), comboBox);
+    m_extraOptionsLayout->addRow(new QLabel(name), comboBox);
     return comboBox;
 }
 
-void CommonPrintDialogExtraOptionsTab::deleteAllComboBoxes()
+void CommonPrintDialogOptionsTab::deleteAllComboBoxes()
 {
-    int rowCount = m_layout->rowCount();
+    int rowCount = m_extraOptionsLayout->rowCount();
     for(int i=rowCount-1; i>=0; i--)
-        m_layout->removeRow(i);
+        m_extraOptionsLayout->removeRow(i);
 }
 
 QT_END_NAMESPACE

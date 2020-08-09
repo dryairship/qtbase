@@ -11,8 +11,6 @@ QT_BEGIN_NAMESPACE
 class QCpdbPrinterSupport : public QPlatformPrinterSupport
 {
 public:
-    QCpdbPrinterSupport();
-
     QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) override;
     QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) override;
 
