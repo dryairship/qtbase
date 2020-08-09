@@ -7,12 +7,7 @@
 
 #include <QtPrintSupport/QPrinterInfo>
 
-
 QT_BEGIN_NAMESPACE
-
-QCpdbPrinterSupport::QCpdbPrinterSupport() : QPlatformPrinterSupport()
-{
-}
 
 QPrintEngine *QCpdbPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId)
 {
@@ -36,8 +31,7 @@ QPrintDevice QCpdbPrinterSupport::createPrintDevice(const QString &id)
 QStringList QCpdbPrinterSupport::availablePrintDeviceIds() const
 {
     qDebug("Returning empty available printers list");
-    QStringList list;
-    return list;
+    return {};
 }
 
 QString QCpdbPrinterSupport::defaultPrintDeviceId() const
