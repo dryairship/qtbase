@@ -236,6 +236,15 @@ void CommonPrintDialogBackend::setPageRange(QVariant range)
     );
 }
 
+void CommonPrintDialogBackend::setNumCopies(QVariant copies)
+{
+    add_setting_to_printer(
+        m_printerObj,
+        const_cast<char*>("copies"),
+        copies.value<QString>().toLatin1().data()
+    );
+}
+
 void CommonPrintDialogBackend::printFile(QString filePath)
 {
     qDebug("Printing file: %s", filePath.toLatin1().data());

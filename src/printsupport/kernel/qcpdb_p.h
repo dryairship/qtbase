@@ -93,6 +93,7 @@ public:
     void setCurrentPrinter(QString printerId, QString backendName);
     QMap<QString, QStringList> getOptionsForCurrentPrinter();
     void setRemotePrintersVisible(bool visible);
+    void setNumCopies(QVariant copies);
     void setPageRange(QVariant range);
     void setCollateEnabled(bool enabled);
     void setReversePageOrder(bool reverse);

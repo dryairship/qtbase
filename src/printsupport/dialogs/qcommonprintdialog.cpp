@@ -381,6 +381,7 @@ void CommonPrintDialogMainLayout::copiesSpinBoxValueChanged(int value)
 {
     qDebug("qCPD: copiesValueChanged: %d", value);
     m_generalTab->m_collateCheckBox->setEnabled(value != 1);
+    m_backend->setNumCopies(value);
 }
 
 void CommonPrintDialogMainLayout::collateCheckBoxStateChanged(int state)
