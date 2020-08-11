@@ -5,6 +5,7 @@
 
 #include "QtPrintSupport/qprintengine.h"
 
+#include <QTemporaryFile>
 #include <QtCore/qstring.h>
 #include <QtGui/qpaintengine.h>
 
@@ -32,7 +33,7 @@ class QCpdbPrintEnginePrivate : public QPdfPrintEnginePrivate
     Q_DECLARE_PUBLIC(QCpdbPrintEngine)
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
-    QString cpdbTempFile;
+    QTemporaryFile cpdbTempFile;
 public:
     QCpdbPrintEnginePrivate(QPrinter::PrinterMode m);
 

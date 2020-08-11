@@ -43,8 +43,10 @@ bool QCpdbPrintEnginePrivate::openPrintDevice()
     if (outDevice)
         return false;
 
-    cpdbTempFile = QString::fromLocal8Bit("/tmp/qtcpdb.pdf");
-    outDevice = new QFile(cpdbTempFile);
+    if(!cpdbTempFile.open())
+        return false;
+
+    outDevice = new QFile(cpdbTempFile.fileName());
     static_cast<QFile *>(outDevice)->open(QIODevice::WriteOnly);
 
     return true;
@@ -53,7 +55,7 @@ bool QCpdbPrintEnginePrivate::openPrintDevice()
 void QCpdbPrintEnginePrivate::closePrintDevice()
 {
     QPdfPrintEnginePrivate::closePrintDevice();
-    m_backend->printFile(cpdbTempFile);
+    m_backend->printFile(cpdbTempFile.fileName());
     qDebug("File Printed.");
 }
 
