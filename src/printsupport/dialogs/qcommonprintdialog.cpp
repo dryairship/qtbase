@@ -43,6 +43,17 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     m_tabWidget->addTab(m_jobsTab, tr("Job"));
     m_tabWidget->addTab(m_extraOptionsTab, tr("Extra Options"));
 
+    QPageLayout currentPageLayout = m_commonPrintDialog->m_printer->pageLayout();
+    QPageLayout::Unit unit = currentPageLayout.units();
+    QMarginsF margins = currentPageLayout.margins();
+    m_optionsTab->m_marginTopValue->setText(QString::number(margins.top()));
+    m_optionsTab->m_marginBottomValue->setText(QString::number(margins.bottom()));
+    m_optionsTab->m_marginLeftValue->setText(QString::number(margins.left()));
+    m_optionsTab->m_marginRightValue->setText(QString::number(margins.right()));
+    int unitIndex = m_optionsTab->m_marginUnitComboBox->findData(unit);
+    if(unitIndex != -1)
+        m_optionsTab->m_marginUnitComboBox->setCurrentIndex(unitIndex);
+
     m_printButton = new QPushButton(tr("Print"));
     m_printButton->setDefault(true);
     m_cancelButton = new QPushButton(tr("Cancel"));
@@ -503,6 +514,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_marginBottomValue = new QLineEdit;
     m_marginLeftValue = new QLineEdit;
     m_marginRightValue = new QLineEdit;
+    m_marginUnitComboBox = new QComboBox;
     m_resolutionComboBox = new QComboBox;
     m_qualityComboBox = new QComboBox;
     m_colorModeComboBox = new QComboBox;
@@ -511,18 +523,35 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
 
     m_layout = new QFormLayout;
 
-    m_layout->addRow((new QLabel(tr("Margin"))));
-    m_layout->addRow(new QLabel(tr("Top")), m_marginTopValue);
-    m_layout->addRow(new QLabel(tr("Bottom")), m_marginBottomValue);
-    m_layout->addRow(new QLabel(tr("Left")), m_marginLeftValue);
-    m_layout->addRow(new QLabel(tr("Right")), m_marginRightValue);
-    m_layout->addRow(new QLabel(tr("")));
+
+    QGroupBox *marginsGroupBox = new QGroupBox(tr("Margins"));
+    QGridLayout *marginsGroupBoxLayout = new QGridLayout;
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Units")), 0, 1, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginUnitComboBox, 0, 2);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Top")), 1, 0, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginTopValue, 1, 1);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Bottom")), 1, 2, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginBottomValue, 1, 3);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Left")), 2, 0, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginLeftValue, 2, 1);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Right")), 2, 2, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginRightValue, 2, 3);
+    marginsGroupBox->setLayout(marginsGroupBoxLayout);
+
+    m_layout->addRow(marginsGroupBox);
     m_layout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
     m_layout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
     m_layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
     m_layout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
 
     setLayout(m_layout);
+
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Millimeter"), QPageLayout::Millimeter);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Point"), QPageLayout::Point);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Inch"), QPageLayout::Inch);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Pica"), QPageLayout::Pica);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Didot"), QPageLayout::Didot);
+    m_marginUnitComboBox->addItem(QString::fromUtf8("Cicero"), QPageLayout::Cicero);
 
     m_resolutionComboBox->setProperty("cpdbOptionName", QString::fromUtf8("printer-resolution"));
     m_qualityComboBox->setProperty("cpdbOptionName", QString::fromUtf8("print-quality"));

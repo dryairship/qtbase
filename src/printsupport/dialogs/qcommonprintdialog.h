@@ -69,6 +69,7 @@ private:
     QLineEdit *m_marginBottomValue;
     QLineEdit *m_marginLeftValue;
     QLineEdit *m_marginRightValue;
+    QComboBox *m_marginUnitComboBox;
     QComboBox *m_resolutionComboBox;
     QComboBox *m_qualityComboBox;
     QComboBox *m_finishingsComboBox;
