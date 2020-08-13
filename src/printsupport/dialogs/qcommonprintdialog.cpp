@@ -533,11 +533,12 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_ippAttributeFidelityComboBox = new QComboBox;
 
     m_layout = new QFormLayout;
+    m_otherOptionsLayout = new QFormLayout;
 
     QGroupBox *marginsGroupBox = new QGroupBox(tr("Margins"));
     QGridLayout *marginsGroupBoxLayout = new QGridLayout;
-    marginsGroupBoxLayout->addWidget(new QLabel(tr("Units")), 0, 1, Qt::AlignRight);
-    marginsGroupBoxLayout->addWidget(m_marginUnitComboBox, 0, 2);
+    marginsGroupBoxLayout->addWidget(new QLabel(tr("Units")), 0, 0, 1, 2, Qt::AlignRight);
+    marginsGroupBoxLayout->addWidget(m_marginUnitComboBox, 0, 2, 1, 2);
     marginsGroupBoxLayout->addWidget(new QLabel(tr("Top")), 1, 0, Qt::AlignRight);
     marginsGroupBoxLayout->addWidget(m_marginTopValue, 1, 1);
     marginsGroupBoxLayout->addWidget(new QLabel(tr("Bottom")), 1, 2, Qt::AlignRight);
@@ -548,12 +549,13 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     marginsGroupBoxLayout->addWidget(m_marginRightValue, 2, 3);
     marginsGroupBox->setLayout(marginsGroupBoxLayout);
 
-    m_layout->addRow(marginsGroupBox);
-    m_layout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
-    m_layout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
-    m_layout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
-    m_layout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
+    m_otherOptionsLayout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
+    m_otherOptionsLayout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
+    m_otherOptionsLayout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
+    m_otherOptionsLayout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
 
+    m_layout->addRow(marginsGroupBox, new QLabel());
+    m_layout->addRow(m_otherOptionsLayout);
     setLayout(m_layout);
 
     m_marginUnitComboBox->addItem(QString::fromUtf8("Millimeter"), QPageLayout::Millimeter);

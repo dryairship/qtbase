@@ -76,6 +76,7 @@ private:
     QComboBox *m_ippAttributeFidelityComboBox;
     QComboBox *m_colorModeComboBox;
     QFormLayout *m_layout;
+    QFormLayout *m_otherOptionsLayout;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
