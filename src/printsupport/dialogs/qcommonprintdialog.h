@@ -166,6 +166,7 @@ private:
     QPrinter *m_printer;
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
+    friend class CommonPrintDialogMainLayout;
 public:
     explicit QCommonPrintDialog(QPrinter *printer = nullptr, QWidget *parent = nullptr);
 };

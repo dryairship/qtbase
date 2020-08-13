@@ -271,9 +271,44 @@ void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
 
 void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
 {
+    if(currentText.isEmpty())
+        return;
+
     QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
     qDebug("qCPD | optionChanged > %s : %s", optionName.toLatin1().data(), currentText.toLatin1().data());
     QString pwgSize = CpdbUtils::convertReadablePaperSizeToPWG(currentText);
+
+    static const QString smallX = QString::fromUtf8("x");
+    static const QString underscore = QString::fromUtf8("_");
+    static const QString mmUnit = QString::fromUtf8("mm");
+    static const QString inUnit = QString::fromUtf8("in");
+
+    // pwgSize is of the format `<name>_<width>x<height><unit>`
+    // paperSizeDimensions will be of the format `<width>x<height><unit>`
+    QString paperSizeDimensions = pwgSize.split(underscore).last();
+
+    // Extract the unit from the dimensions. It is always stored in the last 2 characters.
+    QString unitString = paperSizeDimensions.right(2);
+    paperSizeDimensions.remove(unitString); // Remove the unit from the dimensions string.
+
+    QPageSize::Unit unit;
+    if(unitString == mmUnit)
+        unit = QPageSize::Millimeter;
+    else if(unitString == inUnit)
+        unit = QPageSize::Inch;
+    else
+        return; // Unhandled page size
+
+    // Now paperSizeDimensions will be of the format `<width>x<height>`
+    QStringList dimensionsNumbers = paperSizeDimensions.split(smallX);
+    if(dimensionsNumbers.size() != 2)
+        return; // Invalid dimension format
+    qreal width = dimensionsNumbers[0].toDouble();
+    qreal height = dimensionsNumbers[1].toDouble();
+
+    m_commonPrintDialog->m_printer->setPageSize(QPageSize(
+        QSizeF(width, height), unit, pwgSize, QPageSize::ExactMatch));
+
     m_backend->setSelectableOption(optionName, currentText);
 }
 
