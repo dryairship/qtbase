@@ -76,11 +76,14 @@ private:
     QComboBox *m_ippAttributeFidelityComboBox;
     QComboBox *m_colorModeComboBox;
     QFormLayout *m_layout;
-    QFormLayout *m_otherOptionsLayout;
+    QFormLayout *m_extraOptionsLayout;
+    QGroupBox *m_extraOptionsGroupBox;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 
     explicit CommonPrintDialogOptionsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
+    QComboBox *addNewComboBox(QString name);
+    void deleteAllComboBoxes();
 
     friend class CommonPrintDialogMainLayout;
 };
@@ -105,22 +108,6 @@ private:
     friend class CommonPrintDialogMainLayout;
 };
 
-class CommonPrintDialogExtraOptionsTab : public QWidget
-{
-    Q_OBJECT
-
-private:
-    QFormLayout *m_layout;
-
-    std::shared_ptr<CommonPrintDialogBackend> m_backend;
-
-    explicit CommonPrintDialogExtraOptionsTab(std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent = nullptr);
-    QComboBox *addNewComboBox(QString name);
-    void deleteAllComboBoxes();
-
-    friend class CommonPrintDialogMainLayout;
-};
-
 class CommonPrintDialogMainLayout : public QHBoxLayout
 {
     Q_OBJECT
@@ -135,7 +122,6 @@ private:
     CommonPrintDialogPageSetupTab *m_pageSetupTab;
     CommonPrintDialogOptionsTab *m_optionsTab;
     CommonPrintDialogJobsTab *m_jobsTab;
-    CommonPrintDialogExtraOptionsTab *m_extraOptionsTab;
 
     std::shared_ptr<CommonPrintDialogBackend> m_backend;
 

@@ -35,13 +35,11 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     m_pageSetupTab = new CommonPrintDialogPageSetupTab(backend, parent);
     m_optionsTab = new CommonPrintDialogOptionsTab(backend, parent);
     m_jobsTab = new CommonPrintDialogJobsTab(backend, parent);
-    m_extraOptionsTab = new CommonPrintDialogExtraOptionsTab(backend, parent);
 
     m_tabWidget->addTab(m_generalTab, tr("General"));
     m_tabWidget->addTab(m_pageSetupTab, tr("Page Setup"));
     m_tabWidget->addTab(m_optionsTab, tr("Options"));
     m_tabWidget->addTab(m_jobsTab, tr("Job"));
-    m_tabWidget->addTab(m_extraOptionsTab, tr("Extra Options"));
 
     QPageLayout currentPageLayout = m_commonPrintDialog->m_printer->pageLayout();
     QPageLayout::Unit unit = currentPageLayout.units();
@@ -240,11 +238,11 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
     updateComboBox(m_jobsTab->m_jobPriorityComboBox, options, &usedKeys);
     updateComboBox(m_jobsTab->m_jobSheetsComboBox, options, &usedKeys);
 
-    // Clear the extraOptions tab
-    m_extraOptionsTab->deleteAllComboBoxes();
+    // Clear the existing extra options
+    m_optionsTab->deleteAllComboBoxes();
 
-    // extraCount maintains the number of items in the extraOptions tab.
-    // If this number is 0, we will disable the extraOptions tab.
+    // extraCount maintains the number of items in the extraOptions group box.
+    // If this number is 0, we will hide the extraOptions group box.
     int extraCount = 0;
 
     for (QString optionKey : options.keys()) {
@@ -252,7 +250,7 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         if(usedKeys.contains(optionKey))
             continue;
 
-        QComboBox *newComboBox = m_extraOptionsTab->addNewComboBox(optionKey);
+        QComboBox *newComboBox = m_optionsTab->addNewComboBox(optionKey);
         QObject::connect(
             newComboBox, SIGNAL(currentTextChanged(QString)),
             this, SLOT(comboBoxValueChanged(QString))
@@ -261,10 +259,9 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         extraCount++;
     }
 
-    // Disable or enable the extraOptions tab based on extraCount value
-    int extraOptionsTabIndex = m_tabWidget->indexOf(m_extraOptionsTab);
-    bool enableExtraOptionsTab = extraCount>0;
-    m_tabWidget->setTabEnabled(extraOptionsTabIndex, enableExtraOptionsTab);
+    // Show or hide the extraOptions group box based on extraCount value
+    bool showExtraOptionsGroupBox = extraCount>0;
+    m_optionsTab->m_extraOptionsGroupBox->setVisible(showExtraOptionsGroupBox);
 
     // HACK: Updating the values in the m_startJobAtComboBox automatically enables it,
     // HACK: even if the start job option is set to "Now" or "On Hold". So we manually
@@ -533,7 +530,7 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_ippAttributeFidelityComboBox = new QComboBox;
 
     m_layout = new QFormLayout;
-    m_otherOptionsLayout = new QFormLayout;
+    m_extraOptionsLayout = new QFormLayout;
 
     QGroupBox *marginsGroupBox = new QGroupBox(tr("Margins"));
     QGridLayout *marginsGroupBoxLayout = new QGridLayout;
@@ -549,13 +546,19 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     marginsGroupBoxLayout->addWidget(m_marginRightValue, 2, 3);
     marginsGroupBox->setLayout(marginsGroupBoxLayout);
 
-    m_otherOptionsLayout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
-    m_otherOptionsLayout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
-    m_otherOptionsLayout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
-    m_otherOptionsLayout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
+    QGroupBox *imageGroupBox = new QGroupBox(tr("Image Options"));
+    QFormLayout *imageGroupBoxLayout = new QFormLayout;
+    imageGroupBoxLayout->addRow(new QLabel(tr("Resolution")), m_resolutionComboBox);
+    imageGroupBoxLayout->addRow(new QLabel(tr("Quality")), m_qualityComboBox);
+    imageGroupBoxLayout->addRow(new QLabel(tr("Color Mode")), m_colorModeComboBox);
+    imageGroupBoxLayout->addRow(new QLabel(tr("Finishings")), m_finishingsComboBox);
+    imageGroupBox->setLayout(imageGroupBoxLayout);
 
-    m_layout->addRow(marginsGroupBox, new QLabel());
-    m_layout->addRow(m_otherOptionsLayout);
+    m_extraOptionsGroupBox = new QGroupBox(tr("Other Options"));
+    m_extraOptionsGroupBox->setLayout(m_extraOptionsLayout);
+
+    m_layout->addRow(marginsGroupBox, imageGroupBox);
+    m_layout->addRow(m_extraOptionsGroupBox);
     setLayout(m_layout);
 
     m_marginUnitComboBox->addItem(QString::fromUtf8("Millimeter"), QPageLayout::Millimeter);
@@ -616,29 +619,19 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     (void)parent;
 }
 
-CommonPrintDialogExtraOptionsTab::CommonPrintDialogExtraOptionsTab(
-    std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
-    : m_backend(backend)
-{
-    m_layout = new QFormLayout;
-    setLayout(m_layout);
-
-    (void)parent;
-}
-
-QComboBox *CommonPrintDialogExtraOptionsTab::addNewComboBox(QString name)
+QComboBox *CommonPrintDialogOptionsTab::addNewComboBox(QString name)
 {
     QComboBox *comboBox = new QComboBox;
     comboBox->setProperty("cpdbOptionName", name);
-    m_layout->addRow(new QLabel(name), comboBox);
+    m_extraOptionsLayout->addRow(new QLabel(name), comboBox);
     return comboBox;
 }
 
-void CommonPrintDialogExtraOptionsTab::deleteAllComboBoxes()
+void CommonPrintDialogOptionsTab::deleteAllComboBoxes()
 {
-    int rowCount = m_layout->rowCount();
+    int rowCount = m_extraOptionsLayout->rowCount();
     for(int i=rowCount-1; i>=0; i--)
-        m_layout->removeRow(i);
+        m_extraOptionsLayout->removeRow(i);
 }
 
 QT_END_NAMESPACE
