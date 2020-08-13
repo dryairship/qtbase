@@ -387,6 +387,13 @@ void CommonPrintDialogMainLayout::applySettingsAndAccept()
     QPageLayout::Unit marginsUnit = marginsUnitVariant.value<QPageLayout::Unit>();
     m_commonPrintDialog->m_printer->setPageMargins(margins, marginsUnit);
 
+    // Set orientation for the PDF printer
+    QString orientation = m_pageSetupTab->m_orientationComboBox->currentText();
+    if(orientation.contains(QString::fromUtf8("landscape"), Qt::CaseInsensitive))
+        m_commonPrintDialog->m_printer->setPageOrientation(QPageLayout::Landscape);
+    else if(orientation.contains(QString::fromUtf8("portrait"), Qt::CaseInsensitive))
+        m_commonPrintDialog->m_printer->setPageOrientation(QPageLayout::Portrait);
+
     m_commonPrintDialog->accept();
 }
 
