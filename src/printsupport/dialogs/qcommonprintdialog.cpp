@@ -379,6 +379,17 @@ void CommonPrintDialogMainLayout::applySettingsAndAccept()
     else if(m_generalTab->m_rangeCustomRangeRadioButton->isChecked())
         m_backend->setPageRange(m_generalTab->m_customRangeLineEdit->text());
 
+    // Add margins settings to PDF printer
+    QMarginsF margins = QMarginsF(
+        m_optionsTab->m_marginLeftValue->text().toDouble(),
+        m_optionsTab->m_marginTopValue->text().toDouble(),
+        m_optionsTab->m_marginRightValue->text().toDouble(),
+        m_optionsTab->m_marginBottomValue->text().toDouble()
+    );
+    QVariant marginsUnitVariant = m_optionsTab->m_marginUnitComboBox->currentData();
+    QPageLayout::Unit marginsUnit = marginsUnitVariant.value<QPageLayout::Unit>();
+    m_commonPrintDialog->m_printer->setPageMargins(margins, marginsUnit);
+
     m_commonPrintDialog->accept();
 }
 
