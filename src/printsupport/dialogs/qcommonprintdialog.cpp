@@ -46,10 +46,10 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     QPageLayout currentPageLayout = m_commonPrintDialog->m_printer->pageLayout();
     QPageLayout::Unit unit = currentPageLayout.units();
     QMarginsF margins = currentPageLayout.margins();
-    m_optionsTab->m_marginTopValue->setText(QString::number(margins.top()));
-    m_optionsTab->m_marginBottomValue->setText(QString::number(margins.bottom()));
-    m_optionsTab->m_marginLeftValue->setText(QString::number(margins.left()));
-    m_optionsTab->m_marginRightValue->setText(QString::number(margins.right()));
+    m_optionsTab->m_marginTopValue->setValue(margins.top());
+    m_optionsTab->m_marginBottomValue->setValue(margins.bottom());
+    m_optionsTab->m_marginLeftValue->setValue(margins.left());
+    m_optionsTab->m_marginRightValue->setValue(margins.right());
     int unitIndex = m_optionsTab->m_marginUnitComboBox->findData(unit);
     if(unitIndex != -1)
         m_optionsTab->m_marginUnitComboBox->setCurrentIndex(unitIndex);
@@ -381,10 +381,10 @@ void CommonPrintDialogMainLayout::applySettingsAndAccept()
 
     // Add margins settings to PDF printer
     QMarginsF margins = QMarginsF(
-        m_optionsTab->m_marginLeftValue->text().toDouble(),
-        m_optionsTab->m_marginTopValue->text().toDouble(),
-        m_optionsTab->m_marginRightValue->text().toDouble(),
-        m_optionsTab->m_marginBottomValue->text().toDouble()
+        m_optionsTab->m_marginLeftValue->value(),
+        m_optionsTab->m_marginTopValue->value(),
+        m_optionsTab->m_marginRightValue->value(),
+        m_optionsTab->m_marginBottomValue->value()
     );
     QVariant marginsUnitVariant = m_optionsTab->m_marginUnitComboBox->currentData();
     QPageLayout::Unit marginsUnit = marginsUnitVariant.value<QPageLayout::Unit>();
@@ -521,10 +521,10 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
 {
-    m_marginTopValue = new QLineEdit;
-    m_marginBottomValue = new QLineEdit;
-    m_marginLeftValue = new QLineEdit;
-    m_marginRightValue = new QLineEdit;
+    m_marginTopValue = new QDoubleSpinBox;
+    m_marginBottomValue = new QDoubleSpinBox;
+    m_marginLeftValue = new QDoubleSpinBox;
+    m_marginRightValue = new QDoubleSpinBox;
     m_marginUnitComboBox = new QComboBox;
     m_resolutionComboBox = new QComboBox;
     m_qualityComboBox = new QComboBox;
@@ -533,7 +533,6 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     m_ippAttributeFidelityComboBox = new QComboBox;
 
     m_layout = new QFormLayout;
-
 
     QGroupBox *marginsGroupBox = new QGroupBox(tr("Margins"));
     QGridLayout *marginsGroupBoxLayout = new QGridLayout;

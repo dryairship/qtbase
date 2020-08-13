@@ -65,10 +65,10 @@ class CommonPrintDialogOptionsTab : public QWidget
     Q_OBJECT
 
 private:
-    QLineEdit *m_marginTopValue;
-    QLineEdit *m_marginBottomValue;
-    QLineEdit *m_marginLeftValue;
-    QLineEdit *m_marginRightValue;
+    QDoubleSpinBox *m_marginTopValue;
+    QDoubleSpinBox *m_marginBottomValue;
+    QDoubleSpinBox *m_marginLeftValue;
+    QDoubleSpinBox *m_marginRightValue;
     QComboBox *m_marginUnitComboBox;
     QComboBox *m_resolutionComboBox;
     QComboBox *m_qualityComboBox;
