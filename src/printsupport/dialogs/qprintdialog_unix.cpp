@@ -82,7 +82,7 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 #endif
 
 #if QT_CONFIG(cpdb)
-#include <qcommonprintdialog.h>
+#include <qcommonprintdialog_p.h>
 #endif
 
 /*
@@ -232,7 +232,9 @@ public:
     ~QPrintDialogPrivate();
 
     void init();
+#if QT_CONFIG(cpdb)
     void initCpd(QPrinter *printer, QWidget* parent);
+#endif
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
@@ -256,7 +258,9 @@ public:
     QDialogButtonBox *buttons;
     QPushButton *collapseButton;
     QPrinter::OutputFormat printerOutputFormat;
+#if QT_CONFIG(cpdb)
     QCommonPrintDialog *qcpd;
+#endif
 private:
     void setExplicitDuplexMode(QPrint::DuplexMode duplexMode);
     // duplex mode explicitly set by user, QPrint::DuplexAuto otherwise
@@ -625,10 +629,12 @@ QPrintDialogPrivate::~QPrintDialogPrivate()
 {
 }
 
+#if QT_CONFIG(cpdb)
 void QPrintDialogPrivate::initCpd(QPrinter* printer, QWidget* parent)
 {
     qcpd = new QCommonPrintDialog(printer, parent);
 }
+#endif
 
 void QPrintDialogPrivate::init()
 {
@@ -1071,7 +1077,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
 {
     Q_D(QPrintDialog);
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+#if QT_CONFIG(cpdb)
     d->initCpd(printer, parent);
     return;
 #endif
@@ -1085,7 +1091,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
     Q_D(QPrintDialog);
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+#if QT_CONFIG(cpdb)
     d->initCpd(nullptr, parent);
     return;
 #endif
@@ -1100,7 +1106,7 @@ void QPrintDialog::setVisible(bool visible)
 {
     Q_D(QPrintDialog);
 
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+#if QT_CONFIG(cpdb)
     d->qcpd->setVisible(visible);
     return;
 #endif
@@ -1113,7 +1119,7 @@ void QPrintDialog::setVisible(bool visible)
 
 int QPrintDialog::exec()
 {
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+#if QT_CONFIG(cpdb)
     Q_D(QPrintDialog);
     return d->qcpd->exec();
 #else
@@ -1123,7 +1129,7 @@ int QPrintDialog::exec()
 
 void QPrintDialog::accept()
 {
-#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
+#if QT_CONFIG(cpdb)
     QDialog::accept();
     return;
 #endif

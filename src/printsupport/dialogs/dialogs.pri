@@ -33,7 +33,7 @@ qtConfig(printdialog) {
 
     unix:!darwin:qtConfig(cpdb) {
         INCLUDEPATH += $$QT_SOURCE_TREE/src/plugins/printsupport/cpdb
-        HEADERS += $$PWD/qcommonprintdialog.h
+        HEADERS += $$PWD/qcommonprintdialog_p.h
         SOURCES += $$PWD/qcommonprintdialog.cpp
     }
 

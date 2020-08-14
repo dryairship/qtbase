@@ -1,13 +1,56 @@
+/****************************************************************************
+**
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qcommonprintdialog_p.h"
+
 #include <memory>
 #include <QtWidgets/QtWidgets>
 #include <QUuid>
 #include <QStringList>
 
 #include <private/qcpdb_p.h>
-#include "qcommonprintdialog.h"
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    Creates a new QCommonPrintDialog with the given \a printer and \a parent
+*/
 QCommonPrintDialog::QCommonPrintDialog(QPrinter *printer, QWidget *parent)
     : QDialog (parent), m_printer(printer)
 {
@@ -24,6 +67,10 @@ QCommonPrintDialog::QCommonPrintDialog(QPrinter *printer, QWidget *parent)
     setLayout(m_mainLayout);
 }
 
+/*!
+    Sets up the main layout of the \a commonPrintDialog using the given \a backend
+    and \a parent
+*/
 CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     QCommonPrintDialog* commonPrintDialog, std::shared_ptr<CommonPrintDialogBackend> backend, QWidget* parent)
     : m_commonPrintDialog(commonPrintDialog), m_backend(backend)
@@ -72,6 +119,10 @@ CommonPrintDialogMainLayout::CommonPrintDialogMainLayout(
     connectSignalsAndSlots();
 }
 
+/*!
+    Connects the signals emitted from the elements in the layout
+    to the appropriate slots.
+*/
 void CommonPrintDialogMainLayout::connectSignalsAndSlots()
 {
     QObject::connect(
@@ -135,6 +186,10 @@ void CommonPrintDialogMainLayout::connectSignalsAndSlots()
     connectComboBoxSignal(m_optionsTab->m_finishingsComboBox);
 }
 
+/*!
+    Connects the currentTextChanged signal of the given \a comboBox
+    to the slot comboBoxValueChanged.
+*/
 void CommonPrintDialogMainLayout::connectComboBoxSignal(QComboBox* comboBox)
 {
     QObject::connect(
@@ -143,6 +198,10 @@ void CommonPrintDialogMainLayout::connectComboBoxSignal(QComboBox* comboBox)
     );
 }
 
+/*!
+    Connects the toggled signal of the given \a radioButton to the
+    slot startJobAtRadioButtonChanged.
+*/
 void CommonPrintDialogMainLayout::connectStartJobAtRadioButtonSignal(QRadioButton* radioButton)
 {
     QObject::connect(
@@ -151,6 +210,10 @@ void CommonPrintDialogMainLayout::connectStartJobAtRadioButtonSignal(QRadioButto
     );
 }
 
+/*!
+    Updates the displayed printers whenever the printers list
+    changes at the backend.
+*/
 void CommonPrintDialogMainLayout::printerListChanged()
 {
     qDebug("qCPD: Updating Printers list");
@@ -180,6 +243,10 @@ void CommonPrintDialogMainLayout::printerListChanged()
     newPrinterSelected(0);
 }
 
+/*!
+    Updates the options in the dialog when the printer at the given \a row
+    in the list is selected.
+*/
 void CommonPrintDialogMainLayout::newPrinterSelected(int row)
 {
     // Extract data from the hidden columns 3 (id) and 4 (backend)
@@ -270,6 +337,10 @@ void CommonPrintDialogMainLayout::newPrinterSelected(int row)
         m_jobsTab->m_startJobAtComboBox->setEnabled(false);
 }
 
+/*!
+    Sets the value of the option (extracted from the property "cpdbOptionName"
+    of the combo box) to \a currentText
+*/
 void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
 {
     QString optionName = qvariant_cast<QString>(sender()->property("cpdbOptionName"));
@@ -277,6 +348,10 @@ void CommonPrintDialogMainLayout::comboBoxValueChanged(QString currentText)
     m_backend->setSelectableOption(optionName, currentText);
 }
 
+/*!
+    Sets the new dimensions of the page when \a currentText is selected on the
+    paper size combo box.
+*/
 void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentText)
 {
     if(currentText.isEmpty())
@@ -320,12 +395,19 @@ void CommonPrintDialogMainLayout::paperSizeComboBoxValueChanged(QString currentT
     m_backend->setSelectableOption(optionName, currentText);
 }
 
+/*!
+    Sets the visibility of remote printers according to the selected \a state
+*/
 void CommonPrintDialogMainLayout::remotePrintersCheckBoxStateChanged(int state)
 {
     qDebug("qCPD: remotePrintersStateChanged: %d", state);
     m_backend->setRemotePrintersVisible(state == Qt::Checked);
 }
 
+/*!
+    Changes the value of the startJobAt option depending on which radio
+    button is \a checked
+*/
 void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
 {
     // Since this slot is called upon every toggle of a radio button, we want
@@ -353,6 +435,10 @@ void CommonPrintDialogMainLayout::startJobAtRadioButtonChanged(bool checked)
     }
 }
 
+/*!
+    Updates the desired \a comboBox with the \a options of the newly selected printer.
+    Also updates \a usedKeys to denote that this option has been displayed in the dialog.
+*/
 void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QString, QStringList> options, QSet<QString>* usedKeys)
 {
     QString optionName = qvariant_cast<QString>(comboBox->property("cpdbOptionName"));
@@ -364,6 +450,10 @@ void CommonPrintDialogMainLayout::updateComboBox(QComboBox *comboBox, QMap<QStri
     usedKeys->insert(optionName);
 }
 
+/*!
+    Extracts those settings that are not connected to any slots,
+    and sends the values to the backend.
+*/
 void CommonPrintDialogMainLayout::applySettingsAndAccept()
 {
     // Add those settings to printers which are not combo boxes
@@ -397,6 +487,9 @@ void CommonPrintDialogMainLayout::applySettingsAndAccept()
     m_commonPrintDialog->accept();
 }
 
+/*!
+    Constructor for the CommonPrintDialogGeneralTab.
+*/
 CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : QWidget(parent), m_backend(backend)
@@ -471,6 +564,9 @@ CommonPrintDialogGeneralTab::CommonPrintDialogGeneralTab(
     setLayout(layout);
 }
 
+/*!
+    Constructor for the CommonPrintDialogPageSetupTab.
+*/
 CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
@@ -521,6 +617,9 @@ CommonPrintDialogPageSetupTab::CommonPrintDialogPageSetupTab(
     (void)parent;
 }
 
+/*!
+    Constructor for the CommonPrintDialogOptionsTab.
+*/
 CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
@@ -583,6 +682,9 @@ CommonPrintDialogOptionsTab::CommonPrintDialogOptionsTab(
     (void)parent;
 }
 
+/*!
+    Constructor for the CommonPrintDialogJobsTab.
+*/
 CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     std::shared_ptr<CommonPrintDialogBackend> backend, QWidget *parent)
     : m_backend(backend)
@@ -626,6 +728,9 @@ CommonPrintDialogJobsTab::CommonPrintDialogJobsTab(
     (void)parent;
 }
 
+/*!
+    Adds a new combo box in the options tab, with the given \a name
+*/
 QComboBox *CommonPrintDialogOptionsTab::addNewComboBox(QString name)
 {
     QComboBox *comboBox = new QComboBox;
@@ -634,6 +739,9 @@ QComboBox *CommonPrintDialogOptionsTab::addNewComboBox(QString name)
     return comboBox;
 }
 
+/*!
+    Deleted all extra combo boxes from the options tab.
+*/
 void CommonPrintDialogOptionsTab::deleteAllComboBoxes()
 {
     int rowCount = m_extraOptionsLayout->rowCount();

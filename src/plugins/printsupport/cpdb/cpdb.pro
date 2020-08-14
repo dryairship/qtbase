@@ -3,8 +3,6 @@ MODULE = cpdbprintersupport
 
 QT += core-private gui-private printsupport printsupport-private
 
-# QMAKE_USE_PRIVATE += cpdb
-
 INCLUDEPATH += ../../../printsupport/kernel
 
 CONFIG += link_pkgconfig

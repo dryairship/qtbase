@@ -9,7 +9,8 @@
 
     "commandline": {
         "options": {
-            "cups": "boolean"
+            "cups": "boolean",
+            "cpdb": "boolean"
         }
     },
 
@@ -23,15 +24,22 @@
             "sources": [
                 "-lcups"
             ]
+        },
+        "cpdb": {
+            "label": "Common Print Dialog Backends",
+            "headers": "cpdb-libs-frontend.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "cpdb-libs-frontend" }
+            ]
         }
     },
 
     "features": {
         "cpdb": {
-            "label": "CPDB",
-            "purpose": "Provides support for the Common Printing Dialog.",
-            "section": "Widget",
-            "condition": "libs.cups && features.printer && features.datestring",
+            "label": "Common Print Dialog Backends",
+            "purpose": "Provides support for the Common Printing Dialog Backends.",
+            "section": "Painting",
+            "condition": "libs.cpdb && features.printer",
             "output": [ "privateFeature", "feature" ]
         },
         "cups": {
@@ -102,7 +110,8 @@
         {
             "section": "Qt PrintSupport",
             "entries": [
-                "cups"
+                "cups",
+                "cpdb"
             ]
         }
     ]
