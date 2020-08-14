@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <QtWidgets/QtWidgets>
-#include <QtPrintSupport>
+#include <QtPrintSupport/QtPrintSupport>
 #include <QtPrintSupport/private/qcpdb_p.h>
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 

@@ -4,7 +4,7 @@
 #include <QStringList>
 
 #include <private/qcpdb_p.h>
-#include "qcommonprintdialog.h"
+#include "qcommonprintdialog_p.h"
 
 QT_BEGIN_NAMESPACE
 

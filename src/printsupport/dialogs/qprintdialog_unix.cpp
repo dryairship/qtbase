@@ -82,7 +82,7 @@ Q_DECLARE_METATYPE(const ppd_option_t *)
 #endif
 
 #if QT_CONFIG(cpdb)
-#include <qcommonprintdialog.h>
+#include <qcommonprintdialog_p.h>
 #endif
 
 /*
@@ -232,7 +232,9 @@ public:
     ~QPrintDialogPrivate();
 
     void init();
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
     void initCpd(QPrinter *printer, QWidget* parent);
+#endif
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
@@ -256,7 +258,9 @@ public:
     QDialogButtonBox *buttons;
     QPushButton *collapseButton;
     QPrinter::OutputFormat printerOutputFormat;
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
     QCommonPrintDialog *qcpd;
+#endif
 private:
     void setExplicitDuplexMode(QPrint::DuplexMode duplexMode);
     // duplex mode explicitly set by user, QPrint::DuplexAuto otherwise
@@ -625,10 +629,12 @@ QPrintDialogPrivate::~QPrintDialogPrivate()
 {
 }
 
+#if QT_CONFIG(cpdb) && QCPDB_USING_CPDB
 void QPrintDialogPrivate::initCpd(QPrinter* printer, QWidget* parent)
 {
     qcpd = new QCommonPrintDialog(printer, parent);
 }
+#endif
 
 void QPrintDialogPrivate::init()
 {
