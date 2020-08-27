@@ -24,6 +24,13 @@
             "sources": [
                 "-lcups"
             ]
+        },
+        "cpdb": {
+            "label": "Common Print Dialog Backends",
+            "headers": "cpdb-libs-frontend.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "cpdb-libs-frontend" }
+            ]
         }
     },
 
@@ -31,8 +38,8 @@
         "cpdb": {
             "label": "Common Print Dialog Backends",
             "purpose": "Provides support for the Common Printing Dialog Backends.",
-            "section": "Widget",
-            "condition": "libs.cups && features.printer && features.datestring",
+            "section": "Painting",
+            "condition": "libs.cpdb && features.printer",
             "output": [ "privateFeature", "feature" ]
         },
         "cups": {
