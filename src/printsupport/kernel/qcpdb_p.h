@@ -8,13 +8,6 @@
 #include <QStringList>
 #include <memory>
 
-// Check if cpdb-libs is installed on the system
-#if __has_include(<cpdb-libs-frontend.h>)
-  #define QCPDB_USING_CPDB 1
-#else
-  #define QCPDB_USING_CPDB 0
-#endif
-
 #define PPK_CommonPrintDialogBackend QPrintEngine::PrintEnginePropertyKey(0xfd00)
 
 // Forward declaration of classes in cpdb-libs-frontend.h
